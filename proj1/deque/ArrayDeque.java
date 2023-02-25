@@ -56,7 +56,7 @@ public class ArrayDeque <T>{
     }
 
     public void printDeque(){
-        int i=front;
+        int i=front+1;
         int total=0;
         while(i<items.length){
             System.out.print(items[i]);
@@ -71,27 +71,37 @@ public class ArrayDeque <T>{
         System.out.println("");
     }
     public T removeLast(){
+        T removed;
         if(size==0){
             return null;
         }
-        T removed=items[back-1];
-        size--;
-        back--;
-        if(back==-1){
+        if(back==0){
             back=items.length-1;
+            removed=items[back];
         }
+        else{
+            removed=items[back-1];
+            back--;
+        }
+        size--;
         return removed;
     }
     public T removeFirst(){
+        T removed;
         if(size==0){
             return null;
         }
-        T removed=items[front+1];
-        size--;
-        front++;
-        if(front==items.length){
+        if(front+1==items.length){
+            removed=items[0];
             front=0;
         }
+        else{
+            removed=items[front+1];
+            front++;
+        }
+
+        size--;
+
         return removed;
     }
 
