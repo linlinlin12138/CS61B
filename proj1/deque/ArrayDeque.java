@@ -71,24 +71,30 @@ public class ArrayDeque <T>{
         System.out.println("");
     }
     public T removeLast(){
-        T removed=items[back];
+        if(size==0){
+            return null;
+        }
+        T removed=items[back-1];
         size--;
         back--;
         return removed;
     }
     public T removeFirst(){
-        T removed=items[front];
+        if(size==0){
+            return null;
+        }
+        T removed=items[front+1];
         size--;
         front++;
         return removed;
     }
 
     public T get(int index){
-        if(front+index>=items.length){
-            return items[front+index];
+        if(front+1+index<items.length){
+            return items[front+1+index];
         }
-        else if(items.length-front-index>=0){
-            return items[items.length-front-index];
+        else if(items.length-front-1-index>=0){
+            return items[items.length-front-1-index];
         }
         else{
             return null;
