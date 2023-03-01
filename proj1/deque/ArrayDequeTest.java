@@ -25,10 +25,13 @@ public class ArrayDequeTest {
         for(int i=0;i<5;i++){
             a.addLast(i);
         }
+        assertEquals(8,a.size(),0.0);
         assertEquals(2,a.removeFirst(),0.0);
         for(int i=0;i<6;i++){
            a.removeFirst();
+           assertEquals(6-i,a.size(),0.0);
         }
+
         double result=(double)a.removeFirst();
         assertEquals(4,result,0.0);
 
@@ -49,6 +52,23 @@ public class ArrayDequeTest {
         }
         double result=(double)a.removeLast();
         assertEquals(2,result,0.0);
+
+    }
+    @Test
+    public void FillEmptyFill3(){
+        ArrayDeque<Integer> a=new ArrayDeque<Integer>();
+        for(int i=0;i<10;i++){
+            a.addFirst(i);
+        }
+        for(int i=0;i<10;i++){
+            a.addLast(i);
+        }
+        assertEquals(9,a.removeLast(),0.0);
+        for(int i=0;i<10;i++){
+            a.removeLast();
+        }
+        double result=(double)a.removeLast();
+        assertEquals(1,result,0.0);
 
     }
 }
