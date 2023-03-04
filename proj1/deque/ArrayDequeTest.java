@@ -77,15 +77,28 @@ public class ArrayDequeTest {
     }
 
     @Test
-    public void TestEqual(){
-        ArrayDeque<Integer> a=new ArrayDeque<>();
+    public void TestEqual() {
+        ArrayDeque<Integer> a = new ArrayDeque<>();
         for (int i = 0; i < 10; i++) {
             a.addFirst(i);
         }
-        ArrayDeque<Integer> b=new ArrayDeque<>();
+        ArrayDeque<Integer> b = new ArrayDeque<>();
         for (int i = 0; i < 10; i++) {
             b.addFirst(i);
         }
         assertEquals(true, b.equals(a));
+    }
+
+    @Test
+    public void TestEqualArrayLinkedList() {
+        ArrayDeque<Integer> a = new ArrayDeque<>();
+        for (int i = 0; i < 10; i++) {
+            a.addFirst(i);
+        }
+        LinkedListDeque<Integer> b = new LinkedListDeque<>();
+        for (int i = 0; i < 10; i++) {
+            b.addFirst(i);
+        }
+        assertEquals(true, a.equals(b));
     }
 }

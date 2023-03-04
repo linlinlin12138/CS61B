@@ -9,11 +9,26 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
     private int nextBack;
     private Comparator comp;
 
+    private int getFront() {
+        int front = nextFront + 1;
+        if (front == items.length) {
+            return 0;
+        } else {
+            return front;
+        }
+    }
+
+    private int getBack() {
+        int back = nextBack - 1;
+        if (back < 0) {
+            return items.length - 1;
+        } else {
+            return back;
+        }
+    }
+
     public MaxArrayDeque(Comparator<T> c) {
-        items = (T[]) new Object[8];
-        size = 0;
-        nextFront = 4;
-        nextBack = 5;
+        new ArrayDeque();
         comp = c;
     }
 
@@ -21,10 +36,10 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         if (isEmpty()) {
             return null;
         }
-        int j = getFront(nextFront);
+        int j = getFront();
         int total = 1;
         T max = items[j];
-        for (int i = j + 1; i < items.length; i++) {
+        for (int i = j + 1; total < this.size() && i < items.length; i++) {
             if (comp.compare(items[i], max) > 0) {
                 max = items[i];
             }
@@ -43,10 +58,10 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         if (isEmpty()) {
             return null;
         }
-        int j = getFront(nextFront);
+        int j = getFront();
         int total = 1;
         T max = items[j];
-        for (int i = j + 1; i < items.length; i++) {
+        for (int i = j + 1; total < this.size() && i < items.length; i++) {
             if (c.compare(items[i], max) > 0) {
                 max = items[i];
             }

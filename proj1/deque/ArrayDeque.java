@@ -15,7 +15,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         nextBack = 5;
     }
 
-    int getFront(int nextFront) {
+    private int getFront() {
         int front = nextFront + 1;
         if (front == items.length) {
             return 0;
@@ -24,7 +24,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         }
     }
 
-    private int getBack(int nextBack) {
+    private int getBack() {
         int back = nextBack - 1;
         if (back < 0) {
             return items.length - 1;
@@ -33,9 +33,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         }
     }
 
-    public void resize(int capacity) {
+    private void resize(int capacity) {
         T[] a = (T[]) new Object[capacity];
-        int i = getFront(nextFront);
+        int i = getFront();
         int total = 0;
         int newindex = 0;
         while (i < items.length && size > total) {
@@ -91,7 +91,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void printDeque() {
-        int i = getFront(nextFront);
+        int i = getFront();
         int total = 0;
         while (i < items.length) {
             System.out.print(items[i]);
@@ -116,7 +116,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (size == 0) {
             return null;
         }
-        int back = getBack(nextBack);
+        int back = getBack();
         removed = items[back];
         nextBack = back;
         size--;
@@ -132,7 +132,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (size == 0) {
             return null;
         }
-        int front = getFront(nextFront);
+        int front = getFront();
         removed = items[front];
         nextFront = front;
         size--;
@@ -141,11 +141,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public T get(int index) {
-        int front = getFront(nextFront);
+        int front = getFront();
         if (front + index < items.length) {
             return items[front + index];
-        } else if (items.length - front - index < front) {
-            return items[items.length - front - index];
+        } else if (front + index - items.length < front) {
+            return items[front + index - items.length];
         } else {
             return null;
         }
@@ -159,8 +159,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private class ArrayDequeIterator implements Iterator<T> {
         private int wizPos;
 
-        public ArrayDequeIterator() {
-            wizPos = getFront(nextFront);
+        ArrayDequeIterator() {
+            wizPos = getFront();
         }
 
         public boolean hasNext() {
@@ -188,35 +188,21 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (obj == null) {
             return false;
         }
-        if (obj.getClass() != this.getClass()) {
+        if (obj.getClass().getSuperclass() != this.getClass().getSuperclass()) {
             return false;
         }
-        ArrayDeque<T> otherDeque = (ArrayDeque<T>) obj;
+        Deque<T> otherDeque = (Deque<T>) obj;
+
         if (this.size() != otherDeque.size()) {
             return false;
         }
-        int i;
-        int total = 0;
-        for (i = getFront(nextFront); total < this.size() && i < items.length; i++) {
-            if (otherDeque.items[i] == null) {
+        for (int i = 0; i < this.size(); i++) {
+            if (otherDeque.get(i) == null) {
                 return false;
             }
-            if (!this.items[i].equals(otherDeque.items[i])) {
+            if (!this.get(i).equals(otherDeque.get(i))) {
                 return false;
             }
-            total++;
-        }
-        if (total == this.size()) {
-            return true;
-        }
-        for (int j = 0; total < this.size(); j++) {
-            if (otherDeque.items[j] == null) {
-                return false;
-            }
-            if (!this.items[j].equals(otherDeque.items[j])) {
-                return false;
-            }
-            total++;
         }
         return true;
     }

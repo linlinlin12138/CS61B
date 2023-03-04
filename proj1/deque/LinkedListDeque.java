@@ -3,21 +3,21 @@ package deque;
 import java.util.Iterator;
 
 public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
-    private stuffNode sentinel;
+    private StuffNode sentinel;
     private int size;
 
-    private class stuffNode {
-        public stuffNode prev;
-        public T item;
-        public stuffNode next;
+    private class StuffNode {
+        private StuffNode prev;
+        private T item;
+        private StuffNode next;
 
-        public stuffNode(stuffNode p, T i, stuffNode n) {
+        StuffNode(StuffNode p, T i, StuffNode n) {
             prev = p;
             item = i;
             next = n;
         }
 
-        public stuffNode(stuffNode p, stuffNode n) {
+        StuffNode(StuffNode p, StuffNode n) {
             prev = p;
             next = n;
         }
@@ -25,7 +25,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
     //Creates an empty deque
     public LinkedListDeque() {
-        sentinel = new stuffNode(null, null);
+        sentinel = new StuffNode(null, null);
         sentinel.prev = sentinel;
         sentinel.next = sentinel;
         size = 0;
@@ -33,8 +33,8 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void addFirst(T item) {
-        stuffNode second = sentinel.next;
-        stuffNode first = new stuffNode(sentinel, item, second);
+        StuffNode second = sentinel.next;
+        StuffNode first = new StuffNode(sentinel, item, second);
         second.prev = first;
         sentinel.next = first;
         size++;
@@ -42,8 +42,8 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void addLast(T item) {
-        stuffNode prevlast = sentinel.prev;
-        stuffNode last = new stuffNode(prevlast, item, sentinel);
+        StuffNode prevlast = sentinel.prev;
+        StuffNode last = new StuffNode(prevlast, item, sentinel);
         prevlast.next = last;
         sentinel.prev = last;
         size++;
@@ -56,7 +56,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void printDeque() {
-        for (stuffNode s = sentinel.next; s != sentinel && s != null; s = s.next) {
+        for (StuffNode s = sentinel.next; s != sentinel && s != null; s = s.next) {
             System.out.print(s.item + " ");
         }
         System.out.println("");
@@ -69,7 +69,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
             return null;
         }
         T removed = sentinel.next.item;
-        stuffNode first = sentinel.next.next;
+        StuffNode first = sentinel.next.next;
         sentinel.next = first;
         first.prev = sentinel;
         size--;
@@ -82,7 +82,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
             return null;
         }
         T removed = sentinel.prev.item;
-        stuffNode last = sentinel.prev.prev;
+        StuffNode last = sentinel.prev.prev;
         sentinel.prev = last;
         last.next = sentinel;
         size--;
@@ -96,7 +96,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
             return null;
         }
         int position = 0;
-        stuffNode cur = sentinel.next;
+        StuffNode cur = sentinel.next;
         while (index > position) {
             cur = cur.next;
             position++;
@@ -108,7 +108,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         return this.recursiveHelper(index, sentinel.next);
     }
 
-    private T recursiveHelper(int index, stuffNode cur) {
+    private T recursiveHelper(int index, StuffNode cur) {
         if (index < 0 || cur == sentinel) {
             return null;
         }
@@ -127,7 +127,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     private class LinkedListDequeIterator implements Iterator<T> {
         private int wizPos;
 
-        public LinkedListDequeIterator() {
+        LinkedListDequeIterator() {
             wizPos = 0;
         }
 
@@ -150,10 +150,10 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         if (obj == null) {
             return false;
         }
-        if (obj.getClass() != this.getClass()) {
+        if (obj.getClass().getSuperclass() != this.getClass().getSuperclass()) {
             return false;
         }
-        LinkedListDeque<T> otherDeque = (LinkedListDeque<T>) obj;
+        Deque<T> otherDeque = (Deque<T>) obj;
 
         if (this.size() != otherDeque.size()) {
             return false;
@@ -168,6 +168,5 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         }
         return true;
     }
-
-
 }
+
