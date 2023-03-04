@@ -58,8 +58,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void addFirst(T item) {
-        if ((size + 1) * 4 > items.length) {
-            resize(4 * (size + 1));
+        if (size + 1 > items.length) {
+            resize(2 * size);
         }
         items[nextFront] = item;
         size++;
@@ -72,8 +72,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public void addLast(T item) {
-        if ((size + 1) * 4 > items.length) {
-            resize(4 * (size + 1));
+        if (size + 1 > items.length) {
+            resize(2 * size);
         }
         items[nextBack] = item;
         size++;
@@ -169,11 +169,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
         public T next() {
             T returnItem = get(wizPos);
-            if (wizPos == items.length - 1) {
-                wizPos = 0;
-            } else {
-                wizPos++;
-            }
+            wizPos++;
             return returnItem;
         }
 
@@ -188,7 +184,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (obj == null) {
             return false;
         }
-        if (obj.getClass().getSuperclass() != this.getClass().getSuperclass()) {
+        if (!(obj instanceof Deque)) {
             return false;
         }
         Deque<T> otherDeque = (Deque<T>) obj;

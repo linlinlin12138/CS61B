@@ -28,7 +28,10 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
     }
 
     public MaxArrayDeque(Comparator<T> c) {
-        new ArrayDeque();
+        items = (T[]) new Object[8];
+        size = 0;
+        nextFront = 4;
+        nextBack = 5;
         comp = c;
     }
 
