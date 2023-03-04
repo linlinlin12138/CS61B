@@ -75,4 +75,17 @@ public class ArrayDequeTest {
         assertEquals(1, result, 0.0);
 
     }
+
+    @Test
+    public void TestEqual(){
+        ArrayDeque<Integer> a=new ArrayDeque<>();
+        for (int i = 0; i < 10; i++) {
+            a.addFirst(i);
+        }
+        ArrayDeque<Integer> b=new ArrayDeque<>();
+        for (int i = 0; i < 10; i++) {
+            b.addFirst(i);
+        }
+        assertEquals(true, b.equals(a));
+    }
 }

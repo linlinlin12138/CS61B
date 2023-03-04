@@ -147,4 +147,17 @@ public class LinkedListDequeTest {
 
 
     }
+
+    @Test
+    public void TestEqual() {
+        LinkedListDeque<Integer> a = new LinkedListDeque<>();
+        LinkedListDeque<Integer> b = new LinkedListDeque<>();
+        for (int i = 0; i < 5; i++) {
+            a.addLast(i);
+        }
+        for (int i = 0; i < 5; i++) {
+            b.addLast(i);
+        }
+        assertEquals(true, a.equals(b));
+    }
 }

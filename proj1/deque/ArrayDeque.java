@@ -141,10 +141,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public T get(int index) {
-        if (nextFront + 1 + index < items.length) {
-            return items[nextFront + 1 + index];
-        } else if (index - items.length + nextFront + 1 >= 0) {
-            return items[index - items.length + nextFront + 1];
+        int front = getFront(nextFront);
+        if (front + index < items.length) {
+            return items[front + index];
+        } else if (items.length - front - index < front) {
+            return items[items.length - front - index];
         } else {
             return null;
         }
@@ -184,27 +185,40 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof ArrayDeque otherDeque) {
-            if (this.size() != otherDeque.size()) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
+        ArrayDeque<T> otherDeque = (ArrayDeque<T>) obj;
+        if (this.size() != otherDeque.size()) {
+            return false;
+        }
+        int i;
+        int total = 0;
+        for (i = getFront(nextFront); total < this.size() && i < items.length; i++) {
+            if (otherDeque.items[i] == null) {
                 return false;
             }
-            int i;
-            int total = 0;
-            for (i = getFront(nextFront); i < items.length; i++) {
-                if (!this.get(i).equals(otherDeque.get(i))) {
-                    return false;
-                }
-                total++;
+            if (!this.items[i].equals(otherDeque.items[i])) {
+                return false;
             }
-            for (int j = 0; total < this.size(); j++) {
-                if (!this.get(j).equals(otherDeque.get(j))) {
-                    return false;
-                }
-                total++;
-            }
+            total++;
+        }
+        if (total == this.size()) {
             return true;
         }
-        return false;
+        for (int j = 0; total < this.size(); j++) {
+            if (otherDeque.items[j] == null) {
+                return false;
+            }
+            if (!this.items[j].equals(otherDeque.items[j])) {
+                return false;
+            }
+            total++;
+        }
+        return true;
     }
-
 }
+
