@@ -160,11 +160,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         private int wizPos;
 
         ArrayDequeIterator() {
-            wizPos = getFront();
+            wizPos = 0;
         }
 
         public boolean hasNext() {
-            return wizPos != nextBack;
+            return wizPos < size;
         }
 
         public T next() {

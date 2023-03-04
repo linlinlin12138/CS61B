@@ -7,7 +7,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
     private int size;
     private int nextFront;
     private int nextBack;
-    private Comparator comp;
+    private Comparator<T> comp;
 
     private int getFront() {
         int front = nextFront + 1;
@@ -35,49 +35,30 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         comp = c;
     }
 
-    public T max() {
-        if (isEmpty()) {
-            return null;
-        }
-        int j = getFront();
-        int total = 1;
-        T max = items[j];
-        for (int i = j + 1; total < this.size() && i < items.length; i++) {
-            if (comp.compare(items[i], max) > 0) {
-                max = items[i];
-            }
-            total++;
-        }
-        for (int i = 0; total < this.size(); i++) {
-            if (comp.compare(items[i], max) > 0) {
-                max = items[i];
-            }
-            total++;
-        }
-        return max;
-    }
-
     public T max(Comparator<T> c) {
         if (isEmpty()) {
             return null;
         }
-        int j = getFront();
-        int total = 1;
-        T max = items[j];
-        for (int i = j + 1; total < this.size() && i < items.length; i++) {
-            if (c.compare(items[i], max) > 0) {
-                max = items[i];
+        int maxIndex = 0;
+        for (int i = 1; i < size(); i++) {
+            if (c.compare(get(i), get(maxIndex)) > 0) {
+                maxIndex = i;
             }
-            total++;
         }
-        for (int i = 0; total < this.size(); i++) {
-            if (c.compare(items[i], max) > 0) {
-                max = items[i];
-            }
-            total++;
-        }
-        return max;
+        return get(maxIndex);
     }
 
+    public T max() {
+        if (isEmpty()) {
+            return null;
+        }
+        int maxIndex = 0;
+        for (int i = 1; i < size(); i++) {
+            if (comp.compare(get(i), get(maxIndex)) > 0) {
+                maxIndex = i;
+            }
+        }
+        return get(maxIndex);
+    }
 
 }
