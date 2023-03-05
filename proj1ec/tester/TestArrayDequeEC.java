@@ -20,13 +20,13 @@ public class TestArrayDequeEC {
                 int randVal = StdRandom.uniform(0, 100);
                 a.addLast(randVal);
                 b.addLast(randVal);
-                log += "addFirst(" + randVal + ")\n";
+                log += "addLast(" + randVal + ")\n";
             } else if (operationNumber == 1) {
                 //addFirst
                 int randVal = StdRandom.uniform(0, 100);
                 a.addFirst(randVal);
                 b.addFirst(randVal);
-                log += "addLast(" + randVal + ")\n";
+                log += "addFirst(" + randVal + ")\n";
             } else if (operationNumber == 2) {
                 //removeFirst
                 if (a.size() == 0 || b.size() == 0) {
@@ -35,7 +35,7 @@ public class TestArrayDequeEC {
                 log += "removeFirst()\n";
                 Integer x = a.removeFirst();
                 Integer y = b.removeFirst();
-                assertEquals(log, x, y);
+                assertEquals(log, y, x);
             } else {
                 //removeLast
                 if (a.size() == 0 || b.size() == 0) {
@@ -44,7 +44,7 @@ public class TestArrayDequeEC {
                 log += "removeLast()\n";
                 Integer x = a.removeLast();
                 Integer y = b.removeLast();
-                assertEquals(log, x, y);
+                assertEquals(log, y, x);
             }
         }
     }
