@@ -36,12 +36,31 @@ public class TestBSTMap {
         }
     }
 
-    // assumes put works
+    @Test
+    public void ClearTest() {
+        BSTMap<Integer, Integer> b = new BSTMap<Integer, Integer>();
+        for (int i = 0; i < 5; i++) {
+            b.put(i, 1 + i);
+            //make sure put is working via containsKey and get
+            assertTrue(null != b.get(i) && (b.get(i).equals(1 + i))
+                    && b.containsKey(i));
+        }
+        assertEquals(5, b.size());
+        b.clear();
+        assertEquals(0, b.size());
+        for (int i = 0; i < 5; i++) {
+            assertTrue(null == b.get(i) && !b.containsKey(i));
+        }
+    }
+
+
+        // assumes put works
     @Test
     public void sanityContainsKeyTest() {
     	BSTMap<String, Integer> b = new BSTMap<String, Integer>();
         assertFalse(b.containsKey("waterYouDoingHere"));
         b.put("waterYouDoingHere", 0);
+        //b.printInorder();
         assertTrue(b.containsKey("waterYouDoingHere"));
     }
 
