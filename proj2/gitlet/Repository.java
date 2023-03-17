@@ -46,7 +46,7 @@ public class Repository {
     }
 
     public static String createBlob(String fileName){
-        File contentFile=join(GITLET_DIR,fileName);
+        File contentFile=join(CWD,fileName);
         if(!contentFile.exists()){
             System.out.println("File does not exist");
             System.exit(0);
