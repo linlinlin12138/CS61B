@@ -1,9 +1,6 @@
 package gitlet;
 
 // TODO: any imports you need here
-
-import org.checkerframework.checker.units.qual.C;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
