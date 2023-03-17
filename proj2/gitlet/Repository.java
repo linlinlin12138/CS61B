@@ -83,7 +83,13 @@ public class Repository {
         public static void createNewCommit(String message){
             Commit parent = Commit.findCommit("head");
             Date presentTime = new Date();
-            TreeMap<String,String> files=parent.getFiles();
+            TreeMap<String,String> files;
+            if(parent.getFiles()!=null){
+               files=parent.getFiles();
+            }
+            else{
+                files=new TreeMap<>();
+            }
             Commit c = new Commit(message, presentTime,parent.getHashCode(),files);
             TreeMap s=findStagingArea();
             if(s.isEmpty()){
