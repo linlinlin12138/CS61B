@@ -57,7 +57,7 @@ public class Commit implements Serializable {
     }
 
     public String getHashCode(){
-        return sha1(this);
+        return sha1(getTimestamp(),getMessage(),getParent());
     }
 
     public TreeMap getFiles(){

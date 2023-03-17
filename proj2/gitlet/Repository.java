@@ -84,7 +84,7 @@ public class Repository {
             Commit parent = Commit.findCommit("head");
             Date presentTime = new Date();
             TreeMap<String,String> files=parent.getFiles();
-            Commit c = new Commit(message, presentTime,sha1(parent),files);
+            Commit c = new Commit(message, presentTime,parent.getHashCode(),files);
             TreeMap s=findStagingArea();
             if(s.isEmpty()){
                 System.out.println("No changes added to the commit.");
@@ -129,7 +129,7 @@ public class Repository {
             while (cur != null) {
                 System.out.println("===");
                 System.out.print("commit ");
-                System.out.println(sha1(cur));
+                System.out.println(cur.getHashCode());
                 System.out.print("Date: ");
                 SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
                 Date d = cur.getTimestamp();
