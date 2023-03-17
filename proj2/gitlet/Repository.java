@@ -7,7 +7,6 @@ import static gitlet.Utils.*;
 
 import java.nio.file.Files;
 import java.util.Date;
-import java.util.Map;
 import java.util.TreeMap;
 import java.text.SimpleDateFormat;
 

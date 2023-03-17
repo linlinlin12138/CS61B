@@ -1,9 +1,5 @@
 package gitlet;
 
-import java.io.File;
-
-import static gitlet.Repository.GITLET_DIR;
-import static gitlet.Utils.join;
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
@@ -33,6 +29,7 @@ public class Main {
                     System.exit(0);
                 }
                 String message=args[1];
+                Repository.createNewCommit(message);
                 break;
             case "rm":
                 Repository.removeFile(args[1]);
@@ -41,10 +38,10 @@ public class Main {
                 Repository.printLogs();
                 break;
             case "checkout":
-                if(args[1]=="--"){
+                if(args[1].equals("--")){
                     Repository.checkoutforHead(args[2]);
                 }
-                if(args[2]=="--"){
+                if(args[2].equals("--")){
                     Repository.checkoutforID(args[1],args[3]);
                 }
                 break;
