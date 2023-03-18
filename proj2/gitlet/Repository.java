@@ -132,7 +132,7 @@ public class Repository {
         public static void printLogs() {
             Commit hCommit = Commit.findCommit("head");
             Commit cur = hCommit;
-            while (cur != null) {
+            while (true) {
                 System.out.println("===");
                 System.out.print("commit ");
                 System.out.println(cur.getHashCode());
@@ -143,6 +143,9 @@ public class Repository {
                 System.out.println(cur.getMessage());
                 System.out.println();
                 String name = cur.getParent();
+                if(name==null){
+                    return;
+                }
                 cur = Commit.findCommit(name);
             }
         }
@@ -159,11 +162,12 @@ public class Repository {
 
         public static void checkoutforID(String id,String fileName){
             Commit t=Commit.findCommit(id);
-            if(t.getFiles().containsKey(fileName)) {
-                String blobName = (String) t.getFiles().get(fileName);
+            TreeMap<String,String> f=t.getFiles();
+            if(f.containsKey(fileName)) {
+                String blobName = f.get(fileName);
                 File b = findBlob(blobName);
                 String content = readContentsAsString(b);
-                File targetFile = join(GITLET_DIR, fileName);
+                File targetFile = join(CWD, fileName);
                 writeContents(targetFile, content);
             }
             TreeMap s=findStagingArea();
