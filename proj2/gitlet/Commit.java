@@ -83,6 +83,12 @@ public class Commit implements Serializable {
 
     public static Commit findCommit(String commitName){
         File commitFile=join(COMMIT_DIR,commitName);
+        if(commitName=="head" || commitName=="master"){
+            String comName=readContentsAsString(commitFile);
+            File cFile=join(COMMIT_DIR,comName);
+            Commit c=readObject(cFile,Commit.class);
+            return c;
+        }
         Commit tCommit=readObject(commitFile,Commit.class);
         return tCommit;
     }
