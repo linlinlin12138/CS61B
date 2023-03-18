@@ -137,7 +137,7 @@ public class Repository {
                 System.out.print("commit ");
                 System.out.println(cur.getHashCode());
                 System.out.print("Date: ");
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z");
                 Date d = cur.getTimestamp();
                 System.out.println(sdf.format(d));
                 System.out.println(cur.getMessage());
