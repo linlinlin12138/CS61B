@@ -116,7 +116,7 @@ public class Repository {
             }
         }
         Commit hCommit = Commit.findCommit("head");
-        if (hCommit.getFiles().containsKey(fileName)) {
+        if (hCommit.getFiles()!=null&&hCommit.getFiles().containsKey(fileName)) {
             needtobeRemoved = true;
             hCommit.getFiles().remove(fileName);
         }
@@ -213,16 +213,18 @@ public class Repository {
     public static void printGlobalLog() {
         List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
         for (String s : allCommits) {
-            Commit cur = Commit.findCommit(s);
-            System.out.println("===");
-            System.out.print("commit ");
-            System.out.println(cur.getHashCode());
-            System.out.print("Date: ");
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z");
-            Date d = cur.getTimestamp();
-            System.out.println(sdf.format(d));
-            System.out.println(cur.getMessage());
-            System.out.println();
+            if(s!="head"&&s!="branchInfo"){
+                Commit cur = Commit.findCommit(s);
+                System.out.println("===");
+                System.out.print("commit ");
+                System.out.println(cur.getHashCode());
+                System.out.print("Date: ");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z");
+                Date d = cur.getTimestamp();
+                System.out.println(sdf.format(d));
+                System.out.println(cur.getMessage());
+                System.out.println();
+            }
         }
     }
 

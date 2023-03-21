@@ -26,7 +26,7 @@ public class Main {
                 Repository.addtoStagingArea(fileName, blobName);
                 break;
             case "commit":
-                if (args[1] == null) {
+                if (args.length==1) {
                     System.out.println("Please enter a commit message.");
                     System.exit(0);
                 }
@@ -42,10 +42,10 @@ public class Main {
             case "checkout":
                 if (args[1].equals("--")) {
                     Repository.checkoutforHead(args[2]);
-                } else if (args[2].equals("--")) {
-                    Repository.checkoutforID(args[1], args[3]);
-                } else {
+                } else if(args.length==2){
                     Repository.checkOutForBranch(args[1]);
+                } else{
+                    Repository.checkoutforID(args[1], args[3]);
                 }
                 break;
             case "branch":
