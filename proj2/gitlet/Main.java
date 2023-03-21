@@ -1,6 +1,5 @@
 package gitlet;
 
-
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
  */
@@ -41,10 +40,27 @@ public class Main {
                 if(args[1].equals("--")){
                     Repository.checkoutforHead(args[2]);
                 }
-                if(args[2].equals("--")){
+                else if(args[2].equals("--")){
                     Repository.checkoutforID(args[1],args[3]);
                 }
+                else{
+                    Repository.checkOutForBranch(args[1]);
+                }
                 break;
+            case "branch":
+                Commit.createNewBranch(args[1]);
+            case "global-log":
+                Repository.printGlobalLog();
+                break;
+            case "find":
+                Commit.findbyMessage(args[1]);
+                break;
+            case "rm-branch":
+                Commit.removeBranch(args[1]);
+            case "reset":
+                Repository.reset(args[1]);
+            case "merge":
+                Repository.merge(args[1]);
 
         }
     }

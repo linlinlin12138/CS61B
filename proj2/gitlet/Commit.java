@@ -1,10 +1,8 @@
 package gitlet;
 
-// TODO: any imports you need here
 import java.io.File;
 import java.io.Serializable;
-import java.util.Date; // TODO: You'll likely use this in this class
-import java.util.TreeMap;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -25,6 +23,7 @@ public class Commit implements Serializable {
      */
     //Folder to save commits
     static final File COMMIT_DIR=join(".gitlet","commit");
+    //Folder to save the information of branched
     /** The message of this Commit. */
     private String message;
     /** To record when the commit is created.**/
@@ -51,6 +50,14 @@ public class Commit implements Serializable {
         return parent;
     }
 
+    public Commit getParentCommit(){
+        String parentName=getParent();
+        if(parentName==null){
+            return null;
+        }
+        return findCommit(parentName);
+    }
+
 
     public Date getTimestamp() {
         return timestamp;
@@ -69,28 +76,110 @@ public class Commit implements Serializable {
         return files;
     }
 
+    public static void changeHead(String id){
+        File headRecording=join(COMMIT_DIR,"head");
+        writeContents(headRecording,id);
+    }
+
+    public void saveBranchInfo(String branchName,String id){
+        File branchInfo=join(COMMIT_DIR,"branchInfo");
+        HashMap<String,String> hm;
+        if(!branchInfo.exists()){
+            hm=new HashMap<>();
+        }
+        else{
+            hm=readObject(branchInfo,HashMap.class);
+        }
+        hm.put(branchName,id);
+        writeObject(branchInfo,hm);
+    }
+
+    public static String findBranchName(String id){
+        File branchInfo=join(COMMIT_DIR,"branchInfo");
+        HashMap<String,String> hm=readObject(branchInfo,HashMap.class);
+        for(String branchName:hm.keySet()){
+            if(hm.get(branchName)==id){
+                return branchName;
+            }
+        }
+        return null;
+    }
+
+
     //save the commit to a file. What file????
-    public void saveCommit(){
+    public void saveCommit(String branchName){
         String name=getHashCode();
         File com=join(COMMIT_DIR,name);
-        File master=join(COMMIT_DIR,"master");
         File HEAD=join(COMMIT_DIR,"head");
         writeObject(com,this);
         //Create separate files to save master and head
-        writeContents(master,name);
         writeContents(HEAD,name);
+        saveBranchInfo(branchName,getHashCode());
     }
 
     public static Commit findCommit(String commitName){
+        if(commitName=="head"){
+            File head=join(COMMIT_DIR,"head");
+            commitName=readContentsAsString(head);
+        }
         File commitFile=join(COMMIT_DIR,commitName);
-        if(commitName=="head" || commitName=="master"){
-            String comName=readContentsAsString(commitFile);
-            File cFile=join(COMMIT_DIR,comName);
-            Commit c=readObject(cFile,Commit.class);
-            return c;
+        if(!commitFile.exists()){
+            File branchInfo=join(COMMIT_DIR,"branchInfo");
+            HashMap<String,String> hs=readObject(branchInfo,HashMap.class);
+            if(!hs.containsKey(commitName)){
+                return null;
+            }
+            commitName=hs.get(commitName);
+            commitFile=join(COMMIT_DIR,commitName);
         }
         Commit tCommit=readObject(commitFile,Commit.class);
         return tCommit;
+    }
+
+    public static void findbyMessage(String message){
+        List<String> allCommits=Utils.plainFilenamesIn(COMMIT_DIR);
+        ArrayList<String> targets=new ArrayList<>();
+        for(String s:allCommits){
+            Commit c=findCommit(s);
+            if(c.message==message){
+                targets.add(s);
+            }
+        }
+        if(targets.isEmpty()){
+            System.out.println("Found no commit with that message.");
+            System.exit(0);
+        }
+        else{
+            for(String s:targets){
+                System.out.println(s);
+            }
+        }
+    }
+    public static void createNewBranch(String branchName){
+        File branchInfo=join(COMMIT_DIR,"branchInfo");
+        HashMap<String,String> hm=readObject(branchInfo,HashMap.class);
+        if(hm.containsKey(branchName)){
+            System.out.println("A branch with that name already exists.");
+            System.exit(0);
+        }
+        hm.put(branchName,findCommit("head").getHashCode());
+        writeObject(branchInfo,hm);
+    }
+
+    public static void removeBranch(String branchName){
+        File branchInfo=join(COMMIT_DIR,"branchInfo");
+        HashMap<String,String> hm=readObject(branchInfo,HashMap.class);
+        if(!hm.containsKey(branchName)){
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        String id=hm.get(branchName);
+        if(findCommit("head").getHashCode()==id){
+            System.out.println("Cannot remove the current branch.");
+            System.exit(0);
+        }
+        hm.remove(branchName);
+        writeObject(branchInfo,hm);
     }
 
 }
