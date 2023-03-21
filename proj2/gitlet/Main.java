@@ -1,33 +1,36 @@
 package gitlet;
 
-/** Driver class for Gitlet, a subset of the Git version-control system.
- *  @author TODO
+/**
+ * Driver class for Gitlet, a subset of the Git version-control system.
+ *
+ * @author TODO
  */
 public class Main {
 
-    /** Usage: java gitlet.Main ARGS, where ARGS contains
-     *  <COMMAND> <OPERAND1> <OPERAND2> ... 
+    /**
+     * Usage: java gitlet.Main ARGS, where ARGS contains
+     * <COMMAND> <OPERAND1> <OPERAND2> ...
      */
     public static void main(String[] args) {
-        if(args.length==0){
+        if (args.length == 0) {
             throw new GitletException("Please enter a command.");
         }
         String firstArg = args[0];
-        switch(firstArg) {
+        switch (firstArg) {
             case "init":
                 Repository.intializeRepository();
                 break;
             case "add":
-                String fileName=args[1];
-                String blobName=Repository.createBlob(fileName);
-                Repository.addtoStagingArea(fileName,blobName);
+                String fileName = args[1];
+                String blobName = Repository.createBlob(fileName);
+                Repository.addtoStagingArea(fileName, blobName);
                 break;
             case "commit":
-                if(args[1]==null){
+                if (args[1] == null) {
                     System.out.println("Please enter a commit message.");
                     System.exit(0);
                 }
-                String message=args[1];
+                String message = args[1];
                 Repository.createNewCommit(message);
                 break;
             case "rm":
@@ -37,18 +40,17 @@ public class Main {
                 Repository.printLogs();
                 break;
             case "checkout":
-                if(args[1].equals("--")){
+                if (args[1].equals("--")) {
                     Repository.checkoutforHead(args[2]);
-                }
-                else if(args[2].equals("--")){
-                    Repository.checkoutforID(args[1],args[3]);
-                }
-                else{
+                } else if (args[2].equals("--")) {
+                    Repository.checkoutforID(args[1], args[3]);
+                } else {
                     Repository.checkOutForBranch(args[1]);
                 }
                 break;
             case "branch":
                 Commit.createNewBranch(args[1]);
+                break;
             case "global-log":
                 Repository.printGlobalLog();
                 break;
@@ -57,10 +59,13 @@ public class Main {
                 break;
             case "rm-branch":
                 Commit.removeBranch(args[1]);
+                break;
             case "reset":
                 Repository.reset(args[1]);
+                break;
             case "merge":
                 Repository.merge(args[1]);
+                break;
 
         }
     }
