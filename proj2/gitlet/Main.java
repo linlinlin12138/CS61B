@@ -1,9 +1,13 @@
 package gitlet;
 
+import java.nio.file.Files;
+
+import static gitlet.Repository.GITLET_DIR;
+
 /**
  * Driver class for Gitlet, a subset of the Git version-control system.
  *
- * @author TODO
+ * @author
  */
 public class Main {
 
@@ -17,6 +21,9 @@ public class Main {
             System.exit(0);
         }
         String firstArg = args[0];
+        if(!firstArg.equals("init")&&!Files.exists(GITLET_DIR.toPath())){
+            System.out.println("Not in an initialized Gitlet directory.");
+        }
         switch (firstArg) {
             case "init":
                 Repository.intializeRepository();
@@ -27,12 +34,15 @@ public class Main {
                 Repository.addtoStagingArea(fileName, blobName);
                 break;
             case "commit":
-                if (args.length==1) {
+                if (args.length==1||args[1].equals("")) {
                     System.out.println("Please enter a commit message.");
                     System.exit(0);
                 }
                 String message = args[1];
                 Repository.createNewCommit(message);
+                break;
+            case "status":
+                Repository.printStatus();
                 break;
             case "rm":
                 Repository.removeFile(args[1]);

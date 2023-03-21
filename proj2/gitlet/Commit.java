@@ -115,15 +115,15 @@ public class Commit implements Serializable {
     public void saveCommit(String branchName) {
         String name = getHashCode();
         File com = join(COMMIT_DIR, name);
-        File HEAD = join(COMMIT_DIR, "head");
+        File head = join(COMMIT_DIR, "head");
         writeObject(com, this);
         //Create separate files to save master and head
-        writeContents(HEAD, name);
+        writeContents(head, name);
         saveBranchInfo(branchName, getHashCode());
     }
 
     public static Commit findCommit(String commitName) {
-        if (commitName == "head") {
+        if (commitName.equals("head")) {
             File head = join(COMMIT_DIR, "head");
             commitName = readContentsAsString(head);
         }
