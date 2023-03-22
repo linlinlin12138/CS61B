@@ -191,7 +191,7 @@ public class Repository {
         TreeMap<String, String> headFiles = head.getFiles();
         if(files!=null){
             for (String name : files.keySet()) {
-                if (!headFiles.containsKey(name)) {
+                if (headFiles!=null&&!headFiles.containsKey(name)) {
                     System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                     System.exit(0);
                 }
@@ -201,7 +201,7 @@ public class Repository {
         }
         if(headFiles!=null){
             for (String name : headFiles.keySet()) {
-                if (!files.containsKey(name)) {
+                if (files!=null&&!files.containsKey(name)) {
                     removeFile(name);
                 }
             }
