@@ -178,7 +178,7 @@ public class Repository {
 
     public static void checkOutForBranch(String branchname) {
         Commit branch = Commit.findCommit(branchname);
-        if (branch.equals(null)) {
+        if (branch==null) {
             System.out.println("No such branch exists.");
             System.exit(0);
         }
@@ -189,20 +189,23 @@ public class Repository {
         }
         TreeMap<String, String> files = branch.getFiles();
         TreeMap<String, String> headFiles = head.getFiles();
-        for (String name : files.keySet()) {
-            if (!headFiles.containsKey(name)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                System.exit(0);
-            }
-            File f = join(CWD, name);
-            writeContents(f, files.get(name));
-        }
-        for (String name : headFiles.keySet()) {
-            if (!files.containsKey(name)) {
-                removeFile(name);
+        if(files!=null){
+            for (String name : files.keySet()) {
+                if (!headFiles.containsKey(name)) {
+                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                    System.exit(0);
+                }
+                File f = join(CWD, name);
+                writeContents(f, files.get(name));
             }
         }
-
+        if(headFiles!=null){
+            for (String name : headFiles.keySet()) {
+                if (!files.containsKey(name)) {
+                    removeFile(name);
+                }
+            }
+        }
         Commit.changeHead(branch.getHashCode());
         clearStagingArea();
     }
