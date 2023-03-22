@@ -82,9 +82,27 @@ public class Commit implements Serializable {
         return files;
     }
 
-    public static void changeHead(String id) {
-        File headRecording = join(COMMIT_DIR, "head");
-        writeContents(headRecording, id);
+    public static void changeHead(String branchname,String id) {
+        File branchInfo = join(COMMIT_DIR, "branchInfo");
+        HashMap<String, String> hm = readObject(branchInfo, HashMap.class);
+        hm.put(branchname,id);
+        writeObject(branchInfo,hm);
+    }
+    public static void changeCurBranch(String name){
+        File curBranch=join(COMMIT_DIR,"curBranch");
+        writeContents(curBranch,name);
+    }
+
+    public static String getBranchHead(String branchName){
+        File branchInfo = join(COMMIT_DIR, "branchInfo");
+        HashMap<String, String> hm = readObject(branchInfo, HashMap.class);
+        return hm.get(branchName);
+    }
+
+    public static Commit getCurHead(){
+        File curBranch=join(COMMIT_DIR,"curBranch");
+        String name=readContentsAsString(curBranch);
+        return findCommit(name);
     }
 
     public void saveBranchInfo(String branchName, String id) {
