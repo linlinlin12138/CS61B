@@ -413,15 +413,21 @@ public class Repository {
             System.exit(0);
         }
         Commit master = Commit.getCurHead();
-        Commit br = branch;
-        while (br != null) {
-            if (br.equals(master)) {
-                System.out.println("Cannot merge a branch with itself.");
-                System.exit(0);
-            }
-            br = br.getParentCommit();
+        if (branch.equals(master)) {
+            System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
         }
+        Commit br=branch;
         Commit splitPoint = findCommonAncestor(branch, master);
+        if(splitPoint.equals(branch)){
+            checkOutForBranch(branchName);
+            System.out.println("Current branch fast-forwarded.");
+            System.exit(0);
+        }
+        if(splitPoint.equals(master)){
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+        }
         TreeMap<String, String> b = branch.getFiles();
         TreeMap<String, String> m = master.getFiles();
         TreeMap<String, String> s = splitPoint.getFiles();

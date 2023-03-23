@@ -196,7 +196,7 @@ public class Commit implements Serializable {
             System.exit(0);
         }
         String id = hm.get(branchName);
-        if (getCurHead().getHashCode() == id) {
+        if (id.equals(getCurHead().getHashCode())) {
             System.out.println("Cannot remove the current branch.");
             System.exit(0);
         }
