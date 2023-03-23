@@ -64,7 +64,7 @@ public class Repository {
         if (s.containsKey(fileName) && s.get(fileName).equals(blobName)) {
             return;
         }
-        if (files != null && files.get(fileName) == blobName) {
+        if (files != null && files.get(fileName).equals(blobName)) {
             s.remove(fileName);
             writeObject(join(GITLET_DIR, "stagedforadd"), s);
             return;
@@ -143,6 +143,7 @@ public class Repository {
                 needtobeRemoved = true;
                 s.remove(fileName);
                 writeObject(join(GITLET_DIR, "stagedforadd"), s);
+                return;
             }
         }
         Commit hCommit = getCurHead();

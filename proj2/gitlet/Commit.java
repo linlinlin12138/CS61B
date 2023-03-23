@@ -162,7 +162,7 @@ public class Commit implements Serializable {
         for (String s : allCommits) {
             if (!s.equals("head") && !s.equals("branchInfo") && !s.equals("curBranch")) {
                 Commit c = findCommit(s);
-                if (c.message == message) {
+                if (c.message.equals(message)) {
                     targets.add(s);
                 }
             }
@@ -184,7 +184,7 @@ public class Commit implements Serializable {
             System.out.println("A branch with that name already exists.");
             System.exit(0);
         }
-        hm.put(branchName, findCommit("head").getHashCode());
+        hm.put(branchName, getCurHead().getHashCode());
         writeObject(branchInfo, hm);
     }
 
