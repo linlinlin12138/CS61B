@@ -59,6 +59,10 @@ public class Main {
                 } else if (args.length == 3 && args[2] == "--") {
                     Repository.checkoutforID(args[1], args[3]);
                 }
+                else{
+                    System.out.println("Incorrect operands.");
+                    System.exit(0);
+                }
                 break;
             case "branch":
                 Commit.createNewBranch(args[1]);

@@ -71,6 +71,7 @@ public class Repository {
         }
         if (r != null && r.containsKey(fileName)) {
             r.remove(fileName);
+            writeObject(join(GITLET_DIR, "removedArea"), r);
             return;
         }
         s.put(fileName, blobName);
@@ -259,7 +260,8 @@ public class Repository {
         File branchInfo = join(COMMIT_DIR, "branchInfo");
         HashMap<String, String> branch = readObject(branchInfo, HashMap.class);
         String[] branches = new String[branch.size()];
-        Commit head = Commit.getCurHead();
+        File curBranch = join(COMMIT_DIR, "curBranch");
+        String c=readContentsAsString(curBranch);
         int i = 0;
         if (branchInfo.exists() && !branch.isEmpty()) {
             for (String name : branch.keySet()) {
@@ -268,7 +270,7 @@ public class Repository {
             }
             Arrays.sort(branches);
             for (String name : branches) {
-                if (name.equals(head.getHashCode())) {
+                if (name.equals(c)) {
                     System.out.println("*" + name);
                 } else {
                     System.out.println(name);

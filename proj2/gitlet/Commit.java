@@ -160,9 +160,11 @@ public class Commit implements Serializable {
         List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
         ArrayList<String> targets = new ArrayList<>();
         for (String s : allCommits) {
-            Commit c = findCommit(s);
-            if (c.message == message) {
-                targets.add(s);
+            if (!s.equals("head") && !s.equals("branchInfo") && !s.equals("curBranch")) {
+                Commit c = findCommit(s);
+                if (c.message == message) {
+                    targets.add(s);
+                }
             }
         }
         if (targets.isEmpty()) {
