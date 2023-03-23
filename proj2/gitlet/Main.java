@@ -56,7 +56,7 @@ public class Main {
                     Repository.checkoutforHead(args[2]);
                 } else if (args.length == 2) {
                     Repository.checkOutForBranch(args[1]);
-                } else if (args.length == 3 && args[2].equals("--")) {
+                } else if (args.length == 4 && args[2].equals("--")) {
                     Repository.checkoutforID(args[1], args[3]);
                 }
                 else{

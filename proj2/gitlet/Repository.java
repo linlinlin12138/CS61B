@@ -61,17 +61,17 @@ public class Repository {
         TreeMap<String, String> r = findRemovedArea();
         Commit h = getCurHead();
         TreeMap<String, String> files = h.getFiles();
-        if (s.containsKey(fileName) && s.get(fileName).equals(blobName)) {
-            return;
-        }
-        if (files != null && files.get(fileName).equals(blobName)) {
-            s.remove(fileName);
-            writeObject(join(GITLET_DIR, "stagedforadd"), s);
+        if (s.containsKey(fileName) && blobName.equals(s.get(fileName))) {
             return;
         }
         if (r != null && r.containsKey(fileName)) {
             r.remove(fileName);
             writeObject(join(GITLET_DIR, "removedArea"), r);
+            return;
+        }
+        if (files != null && blobName.equals(files.get(fileName))) {
+            s.remove(fileName);
+            writeObject(join(GITLET_DIR, "stagedforadd"), s);
             return;
         }
         s.put(fileName, blobName);
