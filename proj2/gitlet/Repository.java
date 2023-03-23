@@ -29,6 +29,7 @@ public class Repository {
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     //The directory to put all the commits.
     public static final File COMMIT_DIR = join(".gitlet", "commit");
+
     public static void intializeRepository() {
         if (Files.exists(GITLET_DIR.toPath())) {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
@@ -51,14 +52,25 @@ public class Repository {
         String content = readContentsAsString(contentFile);
         String blobName = sha1(content);
         File blob = join(GITLET_DIR, blobName);
-        //Can we create duplicate blob?
         writeContents(blob, content);
         return blobName;
     }
 
     public static void addtoStagingArea(String fileName, String blobName) {
-        TreeMap<String,String> s = findStagingArea();
+        TreeMap<String, String> s = findStagingArea();
+        TreeMap<String, String> r = findRemovedArea();
+        Commit h = getCurHead();
+        TreeMap<String, String> files = h.getFiles();
         if (s.containsKey(fileName) && s.get(fileName).equals(blobName)) {
+            return;
+        }
+        if (files != null && files.get(fileName) == blobName) {
+            s.remove(fileName);
+            writeObject(join(GITLET_DIR, "stagedforadd"), s);
+            return;
+        }
+        if (r != null && r.containsKey(fileName)) {
+            r.remove(fileName);
             return;
         }
         s.put(fileName, blobName);
@@ -67,15 +79,16 @@ public class Repository {
 
     public static void clearStagingArea() {
         File stage = join(GITLET_DIR, "stagedforadd");
-        File rstage=join(GITLET_DIR,"removedArea");
+        File rstage = join(GITLET_DIR, "removedArea");
         TreeMap<String, String> addStaging = new TreeMap<>();
         writeObject(stage, addStaging);
-        writeObject(rstage,addStaging);
+        writeObject(rstage, addStaging);
     }
 
 
-    public static TreeMap<String,String> findStagingArea() {
+    public static TreeMap<String, String> findStagingArea() {
         File stage = join(GITLET_DIR, "stagedforadd");
+
         if (!stage.exists()) {
             TreeMap<String, String> addStaging = new TreeMap<>();
             writeObject(stage, addStaging);
@@ -85,7 +98,7 @@ public class Repository {
 
 
     public static void createNewCommit(String message) {
-        String branchName=readContentsAsString(join(COMMIT_DIR,"curBranch"));
+        String branchName = readContentsAsString(join(COMMIT_DIR, "curBranch"));
         Commit parent = getCurHead();
         Date presentTime = new Date();
         TreeMap<String, String> files;
@@ -95,48 +108,51 @@ public class Repository {
             files = new TreeMap<>();
         }
         Commit c = new Commit(message, presentTime, parent.getHashCode(), files);
-        TreeMap<String,String> s = findStagingArea();
-        if (s.isEmpty()) {
+        TreeMap<String, String> s = findStagingArea();
+        TreeMap<String, String> r = findRemovedArea();
+        if (!s.isEmpty()) {
+            files.putAll(s);
+        } else if (r != null && !r.isEmpty()) {
+            for (String name : r.keySet())
+                files.remove(name);
+        } else {
             System.out.println("No changes added to the commit.");
             System.exit(0);
-        } else {
-            files.putAll(s);
         }
         clearStagingArea();
         c.saveCommit(branchName);
     }
 
-    public static TreeMap<String,String> findRemovedArea(){
-        File r=join(GITLET_DIR,"removedArea");
-        if(!r.exists()){
-            TreeMap<String,String> n=new TreeMap<>();
-            writeObject(r,n);
+    public static TreeMap<String, String> findRemovedArea() {
+        File r = join(GITLET_DIR, "removedArea");
+        if (!r.exists()) {
+            TreeMap<String, String> n = new TreeMap<>();
+            writeObject(r, n);
             return n;
         }
-        return readObject(r,TreeMap.class);
+        return readObject(r, TreeMap.class);
     }
 
     public static void removeFile(String fileName) {
-        TreeMap<String,String> s = findStagingArea();
-        TreeMap<String,String> removedArea=findRemovedArea();
+        TreeMap<String, String> s = findStagingArea();
+        TreeMap<String, String> removedArea = findRemovedArea();
         boolean needtobeRemoved = false;
         if (!s.isEmpty()) {
             if (s.containsKey(fileName)) {
                 needtobeRemoved = true;
-                removedArea.put(fileName,s.get(fileName));
                 s.remove(fileName);
-                writeObject(join(GITLET_DIR,"removedArea"),removedArea);
+                writeObject(join(GITLET_DIR, "stagedforadd"), s);
             }
         }
         Commit hCommit = getCurHead();
-        TreeMap<String,String> tm = hCommit.getFiles();
-        if (tm!=null&&tm.containsKey(fileName)) {
+        TreeMap<String, String> tm = hCommit.getFiles();
+        if (tm != null && tm.containsKey(fileName)) {
             needtobeRemoved = true;
-            removedArea.put(fileName,tm.get(fileName));
-            writeObject(join(GITLET_DIR,"removedArea"),removedArea);
+            removedArea.put(fileName, tm.get(fileName));
+            writeObject(join(GITLET_DIR, "removedArea"), removedArea);
             tm.remove(fileName);
-            File commitFile=join(COMMIT_DIR,hCommit.getHashCode());
-            writeObject(commitFile,tm);
+            File commitFile = join(COMMIT_DIR, hCommit.getHashCode());
+            writeObject(commitFile, hCommit);
         }
         if (!needtobeRemoved) {
             System.out.println("No reason to remove the file.");
@@ -149,7 +165,7 @@ public class Repository {
     }
 
     public static void printLogs() {
-        Commit hCommit =getCurHead();
+        Commit hCommit = getCurHead();
         Commit cur = hCommit;
         while (true) {
             System.out.println("===");
@@ -175,9 +191,9 @@ public class Repository {
 
     public static void checkOutForBranch(String branchname) {
         Commit branch = Commit.findCommit(branchname);
-        File curBranch=join(COMMIT_DIR,"curBranch");
-        String cur=readContentsAsString(curBranch);
-        if (branch==null) {
+        File curBranch = join(COMMIT_DIR, "curBranch");
+        String cur = readContentsAsString(curBranch);
+        if (branch == null) {
             System.out.println("No such branch exists.");
             System.exit(0);
         }
@@ -187,9 +203,9 @@ public class Repository {
         }
         TreeMap<String, String> files = branch.getFiles();
         TreeMap<String, String> headFiles = findCommit(cur).getFiles();
-        if(files!=null){
+        if (files != null) {
             for (String name : files.keySet()) {
-                if (headFiles!=null&&!headFiles.containsKey(name)) {
+                if (headFiles != null && !headFiles.containsKey(name)) {
                     System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                     System.exit(0);
                 }
@@ -197,27 +213,27 @@ public class Repository {
                 writeContents(f, files.get(name));
             }
         }
-        if(headFiles!=null){
+        if (headFiles != null) {
             for (String name : headFiles.keySet()) {
-                if (files!=null&&!files.containsKey(name)) {
+                if (files != null && !files.containsKey(name)) {
                     removeFile(name);
                 }
             }
         }
         Commit.changeCurBranch(branchname);
-        Commit.changeHead(branchname,branch.getHashCode());
+        Commit.changeHead(branchname, branch.getHashCode());
         clearStagingArea();
-   }
+    }
 
 
     public static void checkoutforHead(String fileName) {
-        String branchName=readContentsAsString(join(COMMIT_DIR,"curBranch"));
+        String branchName = readContentsAsString(join(COMMIT_DIR, "curBranch"));
         checkoutforID(getBranchHead(branchName), fileName);
     }
 
     public static void checkoutforID(String id, String fileName) {
         Commit t = Commit.findCommit(id);
-        if(t==null){
+        if (t == null) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
         }
@@ -228,45 +244,43 @@ public class Repository {
             String content = readContentsAsString(b);
             File targetFile = join(CWD, fileName);
             writeContents(targetFile, content);
-        }
-        else{
+        } else {
             System.out.println("File does not exist in that commit.");
             System.exit(0);
         }
-        TreeMap<String,String> s = findStagingArea();
+        TreeMap<String, String> s = findStagingArea();
         if (!s.isEmpty()) {
             s.remove(fileName);
         }
     }
 
-    public static void printStatus(){
+    public static void printStatus() {
         System.out.println("=== Branches ===");
-        File branchInfo=join(COMMIT_DIR,"branchInfo");
-        HashMap<String,String> branch=readObject(branchInfo,HashMap.class);
-        String[] branches=new String[branch.size()];
-        Commit head=Commit.getCurHead();
-        int i=0;
-        if(branchInfo.exists()&&!branch.isEmpty()){
-            for(String name:branch.keySet()){
-                branches[i]=name;
+        File branchInfo = join(COMMIT_DIR, "branchInfo");
+        HashMap<String, String> branch = readObject(branchInfo, HashMap.class);
+        String[] branches = new String[branch.size()];
+        Commit head = Commit.getCurHead();
+        int i = 0;
+        if (branchInfo.exists() && !branch.isEmpty()) {
+            for (String name : branch.keySet()) {
+                branches[i] = name;
                 i++;
             }
             Arrays.sort(branches);
-            for(String name:branches){
-                if(name.equals(head.getHashCode())){
-                    System.out.println("*"+name);
-                }
-                else{
+            for (String name : branches) {
+                if (name.equals(head.getHashCode())) {
+                    System.out.println("*" + name);
+                } else {
                     System.out.println(name);
                 }
             }
         }
         System.out.println();
         System.out.println("=== Staged Files ===");
-        TreeMap<String,String> stage=findStagingArea();
-        String[] stagedFiles=new String[stage.size()];
-        i=0;
-        if(!stage.isEmpty()) {
+        TreeMap<String, String> stage = findStagingArea();
+        String[] stagedFiles = new String[stage.size()];
+        i = 0;
+        if (!stage.isEmpty()) {
             for (String name : stage.keySet()) {
                 stagedFiles[i] = name;
                 i++;
@@ -278,10 +292,10 @@ public class Repository {
         }
         System.out.println();
         System.out.println("=== Removed Files ===");
-        TreeMap<String,String> removed=findRemovedArea();
-        String[] removedFiles=new String[removed.size()];
-        i=0;
-        if(!removed.isEmpty()) {
+        TreeMap<String, String> removed = findRemovedArea();
+        String[] removedFiles = new String[removed.size()];
+        i = 0;
+        if (!removed.isEmpty()) {
             for (String name : removed.keySet()) {
                 removedFiles[i] = name;
                 i++;
@@ -301,7 +315,7 @@ public class Repository {
     public static void printGlobalLog() {
         List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
         for (String s : allCommits) {
-            if(!s.equals("head")&&!s.equals("branchInfo")&&!s.equals("curBranch")){
+            if (!s.equals("head") && !s.equals("branchInfo") && !s.equals("curBranch")) {
                 Commit cur = Commit.findCommit(s);
                 System.out.println("===");
                 System.out.print("commit ");
@@ -325,9 +339,9 @@ public class Repository {
         Commit cur = Commit.getCurHead();
         TreeMap<String, String> t = c.getFiles();
         TreeMap<String, String> headFile = cur.getFiles();
-        if(t!=null){
+        if (t != null) {
             for (String name : t.keySet()) {
-                if (headFile!=null&&!headFile.containsKey(name)) {
+                if (headFile != null && !headFile.containsKey(name)) {
                     System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                     System.exit(0);
                 }
@@ -336,16 +350,16 @@ public class Repository {
                 checkoutforID(id, name);
             }
         }
-        if(headFile!=null){
+        if (headFile != null) {
             for (String name : headFile.keySet()) {
-                if (t!=null&&!t.containsKey(name)) {
+                if (t != null && !t.containsKey(name)) {
                     removeFile(name);
                 }
             }
         }
-        File curBranch=join(COMMIT_DIR,"curBranch");
-        String name=readContentsAsString(curBranch);
-        Commit.changeHead(name,id);
+        File curBranch = join(COMMIT_DIR, "curBranch");
+        String name = readContentsAsString(curBranch);
+        Commit.changeHead(name, id);
         clearStagingArea();
     }
 
@@ -434,7 +448,7 @@ public class Repository {
                 if (m.get(name).equals(s.get(name))) {
                     removeFile(name);
                     m.remove(name);
-                    writeObject(join(COMMIT_DIR, master.getHashCode()), m);
+                    writeObject(join(COMMIT_DIR, master.getHashCode()), master);
                 }
                 //If it is modified in the master, it should stay at they are.
             }
@@ -443,7 +457,7 @@ public class Repository {
                 if (b.get(name).equals(s.get(name))) {
                     removeFile(name);
                     b.remove(name);
-                    writeObject(join(COMMIT_DIR, branch.getHashCode()), b);
+                    writeObject(join(COMMIT_DIR, branch.getHashCode()), branch);
                 }
             }
         }

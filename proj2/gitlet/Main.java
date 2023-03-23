@@ -21,7 +21,7 @@ public class Main {
             System.exit(0);
         }
         String firstArg = args[0];
-        if(!firstArg.equals("init")&&!Files.exists(GITLET_DIR.toPath())){
+        if (!firstArg.equals("init") && !Files.exists(GITLET_DIR.toPath())) {
             System.out.println("Not in an initialized Gitlet directory.");
             System.exit(0);
         }
@@ -35,7 +35,7 @@ public class Main {
                 Repository.addtoStagingArea(fileName, blobName);
                 break;
             case "commit":
-                if (args.length==1||args[1].equals("")) {
+                if (args.length == 1 || args[1].equals("")) {
                     System.out.println("Please enter a commit message.");
                     System.exit(0);
                 }
@@ -54,9 +54,9 @@ public class Main {
             case "checkout":
                 if (args[1].equals("--")) {
                     Repository.checkoutforHead(args[2]);
-                } else if(args.length==2){
+                } else if (args.length == 2) {
                     Repository.checkOutForBranch(args[1]);
-                } else{
+                } else if (args.length == 3 && args[2] == "--") {
                     Repository.checkoutforID(args[1], args[3]);
                 }
                 break;

@@ -82,26 +82,27 @@ public class Commit implements Serializable {
         return files;
     }
 
-    public static void changeHead(String branchname,String id) {
+    public static void changeHead(String branchname, String id) {
         File branchInfo = join(COMMIT_DIR, "branchInfo");
         HashMap<String, String> hm = readObject(branchInfo, HashMap.class);
-        hm.put(branchname,id);
-        writeObject(branchInfo,hm);
-    }
-    public static void changeCurBranch(String name){
-        File curBranch=join(COMMIT_DIR,"curBranch");
-        writeContents(curBranch,name);
+        hm.put(branchname, id);
+        writeObject(branchInfo, hm);
     }
 
-    public static String getBranchHead(String branchName){
+    public static void changeCurBranch(String name) {
+        File curBranch = join(COMMIT_DIR, "curBranch");
+        writeContents(curBranch, name);
+    }
+
+    public static String getBranchHead(String branchName) {
         File branchInfo = join(COMMIT_DIR, "branchInfo");
         HashMap<String, String> hm = readObject(branchInfo, HashMap.class);
         return hm.get(branchName);
     }
 
-    public static Commit getCurHead(){
-        File curBranch=join(COMMIT_DIR,"curBranch");
-        String name=readContentsAsString(curBranch);
+    public static Commit getCurHead() {
+        File curBranch = join(COMMIT_DIR, "curBranch");
+        String name = readContentsAsString(curBranch);
         return findCommit(name);
     }
 
@@ -141,10 +142,6 @@ public class Commit implements Serializable {
     }
 
     public static Commit findCommit(String commitName) {
-        if (commitName.equals("head")) {
-            File head = join(COMMIT_DIR, "head");
-            commitName = readContentsAsString(head);
-        }
         File commitFile = join(COMMIT_DIR, commitName);
         if (!commitFile.exists()) {
             File branchInfo = join(COMMIT_DIR, "branchInfo");
