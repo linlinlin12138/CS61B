@@ -406,12 +406,17 @@ public class Repository {
 
     public static void treatConflicts(String fileName, File b1, File b2) {
         File f = join(CWD, fileName);
-        String contentOfBranch = readContentsAsString(b1);
+        String contentOfBranch;
         String contentOfHead;
         if (b2 == null) {
             contentOfHead = "";
         } else {
             contentOfHead = readContentsAsString(b2);
+        }
+        if (b1 == null) {
+            contentOfBranch = "";
+        } else {
+            contentOfBranch = readContentsAsString(b2);
         }
         String content = "<<<<<<< HEAD" + "\n" + contentOfHead + "\n" + "=======" + "\n" + contentOfBranch + "\n" + ">>>>>>>";
         writeContents(f, content);
@@ -453,7 +458,7 @@ public class Repository {
             //modify in branch, but not in master,in master, it will stay the same as in the split point
             if (b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
                 File f = join(CWD, name);
-                writeContents(f, findBlob(b.get(name)));
+                writeContents(f, readContents(findBlob(b.get(name))));
                 addtoStagingArea(name, b.get(name));
             }
             //modified in branch, deleted in master
@@ -463,7 +468,7 @@ public class Repository {
             }
             if (!s.get(name).equals(m.get(name)) && !b.containsKey(name)) {
                 File b1 = findBlob(m.get(name));
-                treatConflicts(name, b1, null);
+                treatConflicts(name, null, b1);
             }
             //modify in master, but not in branch
             //stay the same
@@ -501,7 +506,9 @@ public class Repository {
                 treatConflicts(name, b1, b2);
             }
         }
-        createNewCommit("Merged " + branchName + " into " + "master");
+        File curb=join(COMMIT_DIR,"curBranch");
+        String n=readContentsAsString(curb);
+        createNewCommit("Merged " + branchName + " into " + n + ".");
 
     }
 
