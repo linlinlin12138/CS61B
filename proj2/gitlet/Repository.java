@@ -111,12 +111,17 @@ public class Repository {
         Commit c = new Commit(message, presentTime, parent.getHashCode(), files);
         TreeMap<String, String> s = findStagingArea();
         TreeMap<String, String> r = findRemovedArea();
+        TreeMap<String,String> f=c.getFiles();
         if (!s.isEmpty()) {
-            files.putAll(s);
-        } else if (r != null && !r.isEmpty()) {
-            for (String name : r.keySet())
-                files.remove(name);
-        } else {
+            f.putAll(s);
+        }
+        if (r != null && !r.isEmpty()) {
+            for (String name : r.keySet()){
+               // System.out.println(1);
+                f.remove(name);
+            }
+        }
+        else if(s.isEmpty()){
             System.out.println("No changes added to the commit.");
             System.exit(0);
         }
@@ -140,7 +145,6 @@ public class Repository {
         boolean needtobeRemoved = false;
         if (!s.isEmpty()) {
             if (s.containsKey(fileName)) {
-                needtobeRemoved = true;
                 s.remove(fileName);
                 writeObject(join(GITLET_DIR, "stagedforadd"), s);
                 return;
@@ -149,9 +153,14 @@ public class Repository {
         Commit hCommit = getCurHead();
         TreeMap<String, String> tm = hCommit.getFiles();
         if (tm != null && tm.containsKey(fileName)) {
+            //System.out.println(1);
             needtobeRemoved = true;
             removedArea.put(fileName, tm.get(fileName));
             writeObject(join(GITLET_DIR, "removedArea"), removedArea);
+            /*File c=join(COMMIT_DIR,hCommit.getHashCode());
+            c.delete();
+            hCommit.getFiles().remove(fileName);
+            writeObject(c,hCommit.getHashCode());*/
         }
         if (!needtobeRemoved) {
             System.out.println("No reason to remove the file.");
@@ -205,7 +214,7 @@ public class Repository {
         if (files != null) {
             for (String name : files.keySet()) {
                 File f = join(CWD, name);
-                if ((headFiles != null && !headFiles.containsKey(name))||headFiles==null){
+                if (headFiles == null || !headFiles.containsKey(name)){
                     if(f.exists()&&!sha1(readContentsAsString(f)).equals(files.get(name))) {
                         System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                         System.exit(0);
@@ -217,7 +226,7 @@ public class Repository {
         }
         if (headFiles != null) {
             for (String name : headFiles.keySet()) {
-                if ((files != null && !files.containsKey(name))|| files==null ) {
+                if (files == null || !files.containsKey(name)) {
                     File f=join(CWD,name);
                     f.delete();
                 }
@@ -377,17 +386,19 @@ public class Repository {
 
 
     public static Commit findCommonAncestor(Commit branch, Commit master) {
-        HashSet<Commit> parentOfBranch = new HashSet<>();
+        HashSet<String> parentOfBranch = new HashSet<>();
         Commit cur = branch;
         while (cur != null) {
-            parentOfBranch.add(cur);
+            parentOfBranch.add(cur.getHashCode());
+            //System.out.println(cur.getMessage());
             cur = cur.getParentCommit();
         }
         Commit m = master;
         while (m != null) {
-            if (parentOfBranch.contains(m)) {
+            if (parentOfBranch.contains(m.getHashCode())) {
                 return m;
             }
+            //System.out.println(m.getMessage());
             m = m.getParentCommit();
         }
         return null;
@@ -426,12 +437,12 @@ public class Repository {
             System.exit(0);
         }
         Commit splitPoint = findCommonAncestor(branch, master);
-        if(splitPoint.equals(branch)){
+        if(splitPoint.equals(master)){
             checkOutForBranch(branchName);
             System.out.println("Current branch fast-forwarded.");
             System.exit(0);
         }
-        if(splitPoint.equals(master)){
+        if(splitPoint.equals(branch)){
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
         }
@@ -440,17 +451,17 @@ public class Repository {
         TreeMap<String, String> s = splitPoint.getFiles();
         for (String name : s.keySet()) {
             //modify in branch, but not in master,in master, it will stay the same as in the split point
-            if (b.containsKey(name) && !b.get(name).equals(s.get(name)) && s.get(name).equals(m.get(name))) {
+            if (b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
                 File f = join(CWD, name);
                 writeContents(f, findBlob(b.get(name)));
                 addtoStagingArea(name, b.get(name));
             }
             //modified in branch, deleted in master
-            if (!b.get(name).equals(s.get(name)) && !m.containsKey(name)) {
+            if (!s.get(name).equals(b.get(name)) && !m.containsKey(name)) {
                 File b1 = findBlob(b.get(name));
                 treatConflicts(name, b1, null);
             }
-            if (!m.get(name).equals(s.get(name)) && !b.containsKey(name)) {
+            if (!s.get(name).equals(m.get(name)) && !b.containsKey(name)) {
                 File b1 = findBlob(m.get(name));
                 treatConflicts(name, b1, null);
             }
@@ -458,31 +469,33 @@ public class Repository {
             //stay the same
             //modified in both master and branch, have the same content, stay the same.
             if (!b.containsKey(name)) {
+                //System.out.println("1");
                 //When a file exists in the split point, but not in the branch.
                 //also unmodified in the master.
                 //means it is removed in the branch.
-                if (m.get(name).equals(s.get(name))) {
+                if (s.get(name).equals(m.get(name))) {
+                    //System.out.println("1");
                     removeFile(name);
-                    m.remove(name);
-                    writeObject(join(COMMIT_DIR, master.getHashCode()), master);
                 }
                 //If it is modified in the master, it should stay at they are.
             }
             if (!m.containsKey(name)) {
-                //Do we need to modify the branch commit?
-                if (b.get(name).equals(s.get(name))) {
-                    removeFile(name);
+                //System.out.println("1");
+                if (s.get(name).equals(b.get(name))) {
+
+                    /*File bCommit=join(COMMIT_DIR,branch.getHashCode());
                     b.remove(name);
-                    writeObject(join(COMMIT_DIR, branch.getHashCode()), branch);
+                    writeObject(bCommit, branch);*/
                 }
             }
         }
         for (String name : b.keySet()) {
+            //System.out.println(name);
             if (!s.containsKey(name) && !m.containsKey(name)) {
                 checkoutforID(branch.getHashCode(), name);
                 addtoStagingArea(name, b.get(name));
             }
-            if (m.containsKey(name) && !m.get(name).equals(b.get(name))) {
+            if (m.containsKey(name) && !b.get(name).equals(m.get(name))) {
                 File b1 = findBlob(b.get(name));
                 File b2 = findBlob(m.get(name));
                 treatConflicts(name, b1, b2);
