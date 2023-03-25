@@ -118,19 +118,8 @@ public class Commit implements Serializable {
         writeObject(branchInfo, hm);
     }
 
-    public static String findBranchName(String id) {
-        File branchInfo = join(COMMIT_DIR, "branchInfo");
-        HashMap<String, String> hm = readObject(branchInfo, HashMap.class);
-        for (String branchName : hm.keySet()) {
-            if (hm.get(branchName) == id) {
-                return branchName;
-            }
-        }
-        return null;
-    }
 
-
-    //save the commit to a file. What file????
+    //save the commit to a file.
     public void saveCommit(String branchName) {
         String name = getHashCode();
         File com = join(COMMIT_DIR, name);

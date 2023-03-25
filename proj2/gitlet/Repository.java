@@ -207,11 +207,13 @@ public class Repository {
         TreeMap<String, String> headFiles = findCommit(cur).getFiles();
         if (files != null) {
             for (String name : files.keySet()) {
-                if (headFiles != null && !headFiles.containsKey(name)) {
-                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                    System.exit(0);
-                }
                 File f = join(CWD, name);
+                if (headFiles != null && !headFiles.containsKey(name)){
+                    if(!sha1(readContentsAsString(f)).equals(files.get(name))) {
+                        System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                        System.exit(0);
+                    }
+                }
                 writeContents(f, files.get(name));
             }
         }
@@ -223,7 +225,6 @@ public class Repository {
             }
         }
         Commit.changeCurBranch(branchname);
-        Commit.changeHead(branchname, branch.getHashCode());
         clearStagingArea();
     }
 
@@ -406,7 +407,6 @@ public class Repository {
             System.out.println("You have uncommitted changes.");
             System.exit(0);
         }
-
         Commit branch = Commit.findCommit(branchName);
         if (branch == null) {
             System.out.println("A branch with that name does not exist.");
@@ -417,7 +417,6 @@ public class Repository {
             System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         }
-        Commit br=branch;
         Commit splitPoint = findCommonAncestor(branch, master);
         if(splitPoint.equals(branch)){
             checkOutForBranch(branchName);
