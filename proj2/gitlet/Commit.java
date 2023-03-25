@@ -145,6 +145,19 @@ public class Commit implements Serializable {
         return tCommit;
     }
 
+    public static Commit findWithShortid(String id){
+        List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
+        for(String s:allCommits){
+            int i=0;
+           while(id.charAt(i)==s.charAt(i)){
+               i++;
+               if(i==id.length()){
+                   return findCommit(s);
+               }
+           }
+        }
+        return null;
+    }
     public static void findbyMessage(String message) {
         List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
         ArrayList<String> targets = new ArrayList<>();

@@ -239,8 +239,11 @@ public class Repository {
     public static void checkoutforID(String id, String fileName) {
         Commit t = Commit.findCommit(id);
         if (t == null) {
-            System.out.println("No commit with that id exists.");
-            System.exit(0);
+            t=Commit.findWithShortid(id);
+            if(t==null){
+                System.out.println("No commit with that id exists.");
+                System.exit(0);
+            }
         }
         TreeMap<String, String> f = t.getFiles();
         if (f.containsKey(fileName)) {
@@ -339,8 +342,11 @@ public class Repository {
     public static void reset(String id) {
         Commit c = Commit.findCommit(id);
         if (c == null) {
-            System.out.println("No commit with that id exists.");
-            System.exit(0);
+            c=Commit.findWithShortid(id);
+            if(c==null){
+                System.out.println("No commit with that id exists.");
+                System.exit(0);
+            }
         }
         Commit cur = Commit.getCurHead();
         TreeMap<String, String> t = c.getFiles();
@@ -349,7 +355,7 @@ public class Repository {
             for (String name : t.keySet()) {
                 if (headFile == null || !headFile.containsKey(name)){
                     File f=join(CWD,name);
-                    if(!sha1(readContentsAsString(f)).equals(t.get(name))){
+                    if(f.exists()&&!sha1(readContentsAsString(f)).equals(t.get(name))){
                         System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                         System.exit(0);
                     }
