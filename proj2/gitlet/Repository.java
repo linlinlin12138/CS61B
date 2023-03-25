@@ -208,7 +208,7 @@ public class Repository {
         if (files != null) {
             for (String name : files.keySet()) {
                 File f = join(CWD, name);
-                if (headFiles != null && !headFiles.containsKey(name)){
+                if ((headFiles != null && !headFiles.containsKey(name))||headFiles==null){
                     if(f.exists()&&!sha1(readContentsAsString(f)).equals(files.get(name))) {
                         System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                         System.exit(0);
@@ -347,9 +347,12 @@ public class Repository {
         TreeMap<String, String> headFile = cur.getFiles();
         if (t != null) {
             for (String name : t.keySet()) {
-                if (headFile != null && !headFile.containsKey(name)) {
-                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                    System.exit(0);
+                if (headFile == null || !headFile.containsKey(name)){
+                    File f=join(CWD,name);
+                    if(!sha1(readContentsAsString(f)).equals(t.get(name))){
+                        System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                        System.exit(0);
+                    }
                 }
             }
             for (String name : t.keySet()) {
