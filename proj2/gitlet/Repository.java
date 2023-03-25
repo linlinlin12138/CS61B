@@ -214,13 +214,15 @@ public class Repository {
                         System.exit(0);
                     }
                 }
-                writeContents(f, files.get(name));
+                String content=readContentsAsString(findBlob(files.get(name)));
+                writeContents(f, content);
             }
         }
         if (headFiles != null) {
             for (String name : headFiles.keySet()) {
                 if ((files != null && !files.containsKey(name))|| files==null ) {
-                    removeFile(name);
+                    File f=join(CWD,name);
+                    f.delete();
                 }
             }
         }
