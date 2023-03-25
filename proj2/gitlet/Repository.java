@@ -152,9 +152,6 @@ public class Repository {
             needtobeRemoved = true;
             removedArea.put(fileName, tm.get(fileName));
             writeObject(join(GITLET_DIR, "removedArea"), removedArea);
-            tm.remove(fileName);
-            File commitFile = join(COMMIT_DIR, hCommit.getHashCode());
-            writeObject(commitFile, hCommit);
         }
         if (!needtobeRemoved) {
             System.out.println("No reason to remove the file.");

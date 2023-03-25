@@ -123,10 +123,7 @@ public class Commit implements Serializable {
     public void saveCommit(String branchName) {
         String name = getHashCode();
         File com = join(COMMIT_DIR, name);
-        File head = join(COMMIT_DIR, "head");
         writeObject(com, this);
-        //Create separate files to save master and head
-        writeContents(head, name);
         saveBranchInfo(branchName, getHashCode());
     }
 
