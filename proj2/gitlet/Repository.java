@@ -209,7 +209,7 @@ public class Repository {
             for (String name : files.keySet()) {
                 File f = join(CWD, name);
                 if (headFiles != null && !headFiles.containsKey(name)){
-                    if(!sha1(readContentsAsString(f)).equals(files.get(name))) {
+                    if(f.exists()&&!sha1(readContentsAsString(f)).equals(files.get(name))) {
                         System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                         System.exit(0);
                     }
