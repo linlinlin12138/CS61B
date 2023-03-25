@@ -219,7 +219,7 @@ public class Repository {
         }
         if (headFiles != null) {
             for (String name : headFiles.keySet()) {
-                if (files != null && !files.containsKey(name)) {
+                if ((files != null && !files.containsKey(name))|| files==null ) {
                     removeFile(name);
                 }
             }
