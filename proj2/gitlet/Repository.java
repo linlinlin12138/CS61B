@@ -416,9 +416,9 @@ public class Repository {
         if (b1 == null) {
             contentOfBranch = "";
         } else {
-            contentOfBranch = readContentsAsString(b2);
+            contentOfBranch = readContentsAsString(b1);
         }
-        String content = "<<<<<<< HEAD" + "\n" + contentOfHead + "\n" + "=======" + "\n" + contentOfBranch + "\n" + ">>>>>>>";
+        String content = "<<<<<<< HEAD" + "\n" + contentOfHead + "=======" +"\n"+ contentOfBranch + ">>>>>>>";
         writeContents(f, content);
         String blobName = createBlob(fileName);
         addtoStagingArea(fileName, blobName);
@@ -437,73 +437,79 @@ public class Repository {
             System.exit(0);
         }
         Commit master = Commit.getCurHead();
-        if (branch.equals(master)) {
+        File curBranch = join(COMMIT_DIR, "curBranch");
+        String curName=readContentsAsString(curBranch);
+        if (branchName.equals(curName)) {
             System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         }
         Commit splitPoint = findCommonAncestor(branch, master);
-        if(splitPoint.equals(master)){
+        if(splitPoint.getHashCode().equals(master.getHashCode())){
             checkOutForBranch(branchName);
             System.out.println("Current branch fast-forwarded.");
             System.exit(0);
         }
-        if(splitPoint.equals(branch)){
+        if(splitPoint.getHashCode().equals(branch.getHashCode())){
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
         }
         TreeMap<String, String> b = branch.getFiles();
         TreeMap<String, String> m = master.getFiles();
         TreeMap<String, String> s = splitPoint.getFiles();
-        for (String name : s.keySet()) {
-            //modify in branch, but not in master,in master, it will stay the same as in the split point
-            if (b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
-                File f = join(CWD, name);
-                writeContents(f, readContents(findBlob(b.get(name))));
-                addtoStagingArea(name, b.get(name));
-            }
-            //modified in branch, deleted in master
-            if (!s.get(name).equals(b.get(name)) && !m.containsKey(name)) {
-                File b1 = findBlob(b.get(name));
-                treatConflicts(name, b1, null);
-            }
-            if (!s.get(name).equals(m.get(name)) && !b.containsKey(name)) {
-                File b1 = findBlob(m.get(name));
-                treatConflicts(name, null, b1);
-            }
-            //modify in master, but not in branch
-            //stay the same
-            //modified in both master and branch, have the same content, stay the same.
-            if (!b.containsKey(name)) {
-                //System.out.println("1");
-                //When a file exists in the split point, but not in the branch.
-                //also unmodified in the master.
-                //means it is removed in the branch.
-                if (s.get(name).equals(m.get(name))) {
-                    //System.out.println("1");
-                    removeFile(name);
+        if(s!=null) {
+            for (String name : s.keySet()) {
+                //modify in branch, but not in master,in master, it will stay the same as in the split point
+                if (b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
+                    File f = join(CWD, name);
+                    writeContents(f, readContents(findBlob(b.get(name))));
+                    addtoStagingArea(name, b.get(name));
                 }
-                //If it is modified in the master, it should stay at they are.
-            }
-            if (!m.containsKey(name)) {
-                //System.out.println("1");
-                if (s.get(name).equals(b.get(name))) {
+                //modified in branch, deleted in master
+                if (!s.get(name).equals(b.get(name)) && !m.containsKey(name)) {
+                    File b1 = findBlob(b.get(name));
+                    treatConflicts(name, b1, null);
+                }
+                if (!s.get(name).equals(m.get(name)) && !b.containsKey(name)) {
+                    File b1 = findBlob(m.get(name));
+                    treatConflicts(name, null, b1);
+                }
+                //modify in master, but not in branch
+                //stay the same
+                //modified in both master and branch, have the same content, stay the same.
+                if (!b.containsKey(name)) {
+                    //System.out.println("1");
+                    //When a file exists in the split point, but not in the branch.
+                    //also unmodified in the master.
+                    //means it is removed in the branch.
+                    if (s.get(name).equals(m.get(name))) {
+                        //System.out.println("1");
+                        removeFile(name);
+                    }
+                    //If it is modified in the master, it should stay at they are.
+                }
+                if (!m.containsKey(name)) {
+                    //System.out.println("1");
+                    if (s.get(name).equals(b.get(name))) {
 
                     /*File bCommit=join(COMMIT_DIR,branch.getHashCode());
                     b.remove(name);
                     writeObject(bCommit, branch);*/
+                    }
                 }
             }
         }
-        for (String name : b.keySet()) {
-            //System.out.println(name);
-            if (!s.containsKey(name) && !m.containsKey(name)) {
-                checkoutforID(branch.getHashCode(), name);
-                addtoStagingArea(name, b.get(name));
-            }
-            if (m.containsKey(name) && !b.get(name).equals(m.get(name))) {
-                File b1 = findBlob(b.get(name));
-                File b2 = findBlob(m.get(name));
-                treatConflicts(name, b1, b2);
+        if(b!=null) {
+            for (String name : b.keySet()) {
+                //System.out.println(name);
+                if (!s.containsKey(name) && !m.containsKey(name)) {
+                    checkoutforID(branch.getHashCode(), name);
+                    addtoStagingArea(name, b.get(name));
+                }
+                if (m.containsKey(name) && !b.get(name).equals(m.get(name))) {
+                    File b1 = findBlob(b.get(name));
+                    File b2 = findBlob(m.get(name));
+                    treatConflicts(name, b1, b2);
+                }
             }
         }
         File curb=join(COMMIT_DIR,"curBranch");
