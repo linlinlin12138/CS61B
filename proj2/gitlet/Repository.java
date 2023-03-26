@@ -418,7 +418,7 @@ public class Repository {
         } else {
             contentOfBranch = readContentsAsString(b1);
         }
-        String content = "<<<<<<< HEAD" + "\n" + contentOfHead + "=======" +"\n"+ contentOfBranch + ">>>>>>>";
+        String content = "<<<<<<< HEAD" + "\n" + contentOfHead + "=======" +"\n"+ contentOfBranch + ">>>>>>>"+"\n";
         writeContents(f, content);
         String blobName = createBlob(fileName);
         addtoStagingArea(fileName, blobName);
@@ -459,25 +459,28 @@ public class Repository {
         if(s!=null) {
             for (String name : s.keySet()) {
                 //modify in branch, but not in master,in master, it will stay the same as in the split point
-                if (b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
+                if (b != null && b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
                     File f = join(CWD, name);
                     writeContents(f, readContents(findBlob(b.get(name))));
                     addtoStagingArea(name, b.get(name));
                 }
                 //modified in branch, deleted in master
-                if (!s.get(name).equals(b.get(name)) && !m.containsKey(name)) {
-                    File b1 = findBlob(b.get(name));
-                    treatConflicts(name, b1, null);
+                if (!s.get(name).equals(b.get(name)) && (m == null || !m.containsKey(name))) {
+                    if(b.get(name)!=null) {
+                        File b1 = findBlob(b.get(name));
+                        treatConflicts(name, b1, null);
+                    }
                 }
-                if (!s.get(name).equals(m.get(name)) && !b.containsKey(name)) {
-                    File b1 = findBlob(m.get(name));
-                    treatConflicts(name, null, b1);
+                if (!s.get(name).equals(m.get(name)) && (b == null || !b.containsKey(name))) {
+                    if(m.get(name)!=null) {
+                        File b1 = findBlob(m.get(name));
+                        treatConflicts(name, null, b1);
+                    }
                 }
                 //modify in master, but not in branch
                 //stay the same
                 //modified in both master and branch, have the same content, stay the same.
-                if (!b.containsKey(name)) {
-                    //System.out.println("1");
+                if (b==null || !b.containsKey(name)) {
                     //When a file exists in the split point, but not in the branch.
                     //also unmodified in the master.
                     //means it is removed in the branch.
@@ -487,34 +490,22 @@ public class Repository {
                     }
                     //If it is modified in the master, it should stay at they are.
                 }
-                if (!m.containsKey(name)) {
-                    //System.out.println("1");
-                    if (s.get(name).equals(b.get(name))) {
-
-                    /*File bCommit=join(COMMIT_DIR,branch.getHashCode());
-                    b.remove(name);
-                    writeObject(bCommit, branch);*/
-                    }
-                }
             }
         }
         if(b!=null) {
             for (String name : b.keySet()) {
-                //System.out.println(name);
-                if (!s.containsKey(name) && !m.containsKey(name)) {
+                if ((s==null || !s.containsKey(name)) && (m == null || !m.containsKey(name))) {
                     checkoutforID(branch.getHashCode(), name);
                     addtoStagingArea(name, b.get(name));
                 }
-                if (m.containsKey(name) && !b.get(name).equals(m.get(name))) {
+                if (m!=null && m.containsKey(name) && !b.get(name).equals(m.get(name))) {
                     File b1 = findBlob(b.get(name));
                     File b2 = findBlob(m.get(name));
                     treatConflicts(name, b1, b2);
                 }
             }
         }
-        File curb=join(COMMIT_DIR,"curBranch");
-        String n=readContentsAsString(curb);
-        createNewCommit("Merged " + branchName + " into " + n + ".");
+        createNewCommit("Merged " + branchName + " into " + curName + ".");
 
     }
 
