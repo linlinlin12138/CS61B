@@ -117,7 +117,6 @@ public class Repository {
         }
         if (r != null && !r.isEmpty()) {
             for (String name : r.keySet()){
-               // System.out.println(1);
                 f.remove(name);
             }
         }
@@ -321,9 +320,41 @@ public class Repository {
             }
         }
         System.out.println();
+        Commit cur=getCurHead();
+        TreeMap<String,String> cf=cur.getFiles();
         System.out.println("=== Modifications Not Staged For Commit ===");
+        if(!stage.isEmpty()) {
+            for (String name : stage.keySet()) {
+                File f=join(CWD,name);
+                if(!f.exists()){
+                    System.out.println(name+" (deleted)");
+                }
+                else if(!sha1(readContentsAsString(f)).equals(stage.get(name))){
+                    System.out.println(name+ " (modified)");
+                }
+            }
+        }
+        if(cf!=null&&!cf.isEmpty()){
+            for(String name: cf.keySet()){
+                File f=join(CWD,name);
+                if(!cf.get(name).equals(sha1(readContentsAsString(f)))){
+                    if(stage.isEmpty()||!stage.containsKey(name)){
+                        System.out.println(name+ " (modified)");
+                    }
+                }
+                if(!f.exists()&&(removed.isEmpty()||!removed.containsKey(name))){
+                    System.out.println(name+" (deleted)");
+                }
+            }
+        }
         System.out.println();
         System.out.println("=== Untracked Files ===");
+        List<String> allFiles = Utils.plainFilenamesIn(CWD);
+        for (String s: allFiles){
+            if((stage.isEmpty()||!stage.containsKey(s))&& (cf==null||cf.containsKey(s))){
+                System.out.println(s);
+            }
+        }
         System.out.println();
     }
 
@@ -384,13 +415,24 @@ public class Repository {
         clearStagingArea();
     }
 
+    public static void treatUntrackedFiles(TreeMap<String,String> m,String fileName){
+        File f=join(CWD,fileName);
+        if(!f.exists()){
+            return;
+        }
+        if(!sha1(readContentsAsString(f)).equals(m.get(fileName))){
+            System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            System.exit(0);
+        }
+    }
+
+
 
     public static Commit findCommonAncestor(Commit branch, Commit master) {
         HashSet<String> parentOfBranch = new HashSet<>();
         Commit cur = branch;
         while (cur != null) {
             parentOfBranch.add(cur.getHashCode());
-            //System.out.println(cur.getMessage());
             cur = cur.getParentCommit();
         }
         Commit m = master;
@@ -398,7 +440,6 @@ public class Repository {
             if (parentOfBranch.contains(m.getHashCode())) {
                 return m;
             }
-            //System.out.println(m.getMessage());
             m = m.getParentCommit();
         }
         return null;
@@ -461,6 +502,7 @@ public class Repository {
                 //modify in branch, but not in master,in master, it will stay the same as in the split point
                 if (b != null && b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
                     File f = join(CWD, name);
+                    treatUntrackedFiles(m,name);
                     writeContents(f, readContents(findBlob(b.get(name))));
                     addtoStagingArea(name, b.get(name));
                 }
@@ -468,11 +510,13 @@ public class Repository {
                 if (!s.get(name).equals(b.get(name)) && (m == null || !m.containsKey(name))) {
                     if(b.get(name)!=null) {
                         File b1 = findBlob(b.get(name));
+                        treatUntrackedFiles(b,name);
                         treatConflicts(name, b1, null);
                     }
                 }
                 if (!s.get(name).equals(m.get(name)) && (b == null || !b.containsKey(name))) {
                     if(m.get(name)!=null) {
+                        treatUntrackedFiles(m,name);
                         File b1 = findBlob(m.get(name));
                         treatConflicts(name, null, b1);
                     }
@@ -485,7 +529,7 @@ public class Repository {
                     //also unmodified in the master.
                     //means it is removed in the branch.
                     if (s.get(name).equals(m.get(name))) {
-                        //System.out.println("1");
+                        treatUntrackedFiles(m,name);
                         removeFile(name);
                     }
                     //If it is modified in the master, it should stay at they are.
@@ -495,12 +539,14 @@ public class Repository {
         if(b!=null) {
             for (String name : b.keySet()) {
                 if ((s==null || !s.containsKey(name)) && (m == null || !m.containsKey(name))) {
+                    treatUntrackedFiles(b,name);
                     checkoutforID(branch.getHashCode(), name);
                     addtoStagingArea(name, b.get(name));
                 }
                 if (m!=null && m.containsKey(name) && !b.get(name).equals(m.get(name))) {
                     File b1 = findBlob(b.get(name));
                     File b2 = findBlob(m.get(name));
+                    treatUntrackedFiles(m,name);
                     treatConflicts(name, b1, b2);
                 }
             }
