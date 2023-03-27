@@ -93,8 +93,8 @@ public class Commit implements Serializable {
     }
 
     public void setOtherParent(String p1, String p2) {
-        parent[1] = p1;
-        parent[2] = p2;
+        parent[0] = p1;
+        parent[1] = p2;
     }
 
     public static void changeHead(String branchname, String id) {

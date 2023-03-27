@@ -335,17 +335,15 @@ public class Repository {
         if (cf != null && !cf.isEmpty()) {
             for (String name : cf.keySet()) {
                 File f = join(CWD, name);
-                if (!f.exists()) {
-                    continue;
+                if (!f.exists() && (removed.isEmpty() || !removed.containsKey(name))) {
+                    System.out.println(name + " (deleted)");
                 }
-                if (!cf.get(name).equals(sha1(readContentsAsString(f)))) {
+                if (f.exists() && !cf.get(name).equals(sha1(readContentsAsString(f)))) {
                     if (stage.isEmpty() || !stage.containsKey(name)) {
                         System.out.println(name + " (modified)");
                     }
                 }
-                if (!f.exists() && (removed.isEmpty() || !removed.containsKey(name))) {
-                    System.out.println(name + " (deleted)");
-                }
+
             }
         }
         System.out.println();
