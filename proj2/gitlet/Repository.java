@@ -337,6 +337,9 @@ public class Repository {
         if(cf!=null&&!cf.isEmpty()){
             for(String name: cf.keySet()){
                 File f=join(CWD,name);
+                if(!f.exists()){
+                    continue;
+                }
                 if(!cf.get(name).equals(sha1(readContentsAsString(f)))){
                     if(stage.isEmpty()||!stage.containsKey(name)){
                         System.out.println(name+ " (modified)");
@@ -351,7 +354,7 @@ public class Repository {
         System.out.println("=== Untracked Files ===");
         List<String> allFiles = Utils.plainFilenamesIn(CWD);
         for (String s: allFiles){
-            if((stage.isEmpty()||!stage.containsKey(s))&& (cf==null||cf.containsKey(s))){
+            if((stage.isEmpty()||!stage.containsKey(s))&& (cf==null||!cf.containsKey(s))){
                 System.out.println(s);
             }
         }
@@ -479,44 +482,44 @@ public class Repository {
         }
         Commit master = Commit.getCurHead();
         File curBranch = join(COMMIT_DIR, "curBranch");
-        String curName=readContentsAsString(curBranch);
+        String curName = readContentsAsString(curBranch);
         if (branchName.equals(curName)) {
             System.out.println("Cannot merge a branch with itself.");
             System.exit(0);
         }
         Commit splitPoint = findCommonAncestor(branch, master);
-        if(splitPoint.getHashCode().equals(master.getHashCode())){
+        if (splitPoint.getHashCode().equals(master.getHashCode())) {
             checkOutForBranch(branchName);
             System.out.println("Current branch fast-forwarded.");
             System.exit(0);
         }
-        if(splitPoint.getHashCode().equals(branch.getHashCode())){
+        if (splitPoint.getHashCode().equals(branch.getHashCode())) {
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
         }
         TreeMap<String, String> b = branch.getFiles();
         TreeMap<String, String> m = master.getFiles();
         TreeMap<String, String> s = splitPoint.getFiles();
-        if(s!=null) {
+        if (s != null) {
             for (String name : s.keySet()) {
                 //modify in branch, but not in master,in master, it will stay the same as in the split point
                 if (b != null && b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
                     File f = join(CWD, name);
-                    treatUntrackedFiles(m,name);
+                    treatUntrackedFiles(m, name);
                     writeContents(f, readContents(findBlob(b.get(name))));
                     addtoStagingArea(name, b.get(name));
                 }
                 //modified in branch, deleted in master
                 if (!s.get(name).equals(b.get(name)) && (m == null || !m.containsKey(name))) {
-                    if(b.get(name)!=null) {
+                    if (b.get(name) != null) {
                         File b1 = findBlob(b.get(name));
-                        treatUntrackedFiles(b,name);
+                        treatUntrackedFiles(b, name);
                         treatConflicts(name, b1, null);
                     }
                 }
                 if (!s.get(name).equals(m.get(name)) && (b == null || !b.containsKey(name))) {
-                    if(m.get(name)!=null) {
-                        treatUntrackedFiles(m,name);
+                    if (m.get(name) != null) {
+                        treatUntrackedFiles(m, name);
                         File b1 = findBlob(m.get(name));
                         treatConflicts(name, null, b1);
                     }
@@ -524,35 +527,44 @@ public class Repository {
                 //modify in master, but not in branch
                 //stay the same
                 //modified in both master and branch, have the same content, stay the same.
-                if (b==null || !b.containsKey(name)) {
+                if (b == null || !b.containsKey(name)) {
                     //When a file exists in the split point, but not in the branch.
                     //also unmodified in the master.
                     //means it is removed in the branch.
                     if (s.get(name).equals(m.get(name))) {
-                        treatUntrackedFiles(m,name);
+                        treatUntrackedFiles(m, name);
                         removeFile(name);
                     }
                     //If it is modified in the master, it should stay at they are.
                 }
             }
         }
-        if(b!=null) {
+        if (b != null) {
             for (String name : b.keySet()) {
-                if ((s==null || !s.containsKey(name)) && (m == null || !m.containsKey(name))) {
-                    treatUntrackedFiles(b,name);
+                if ((s == null || !s.containsKey(name)) && (m == null || !m.containsKey(name))) {
+                    treatUntrackedFiles(b, name);
                     checkoutforID(branch.getHashCode(), name);
                     addtoStagingArea(name, b.get(name));
                 }
-                if (m!=null && m.containsKey(name) && !b.get(name).equals(m.get(name))) {
+                if (m != null && m.containsKey(name) && !b.get(name).equals(m.get(name))) {
                     File b1 = findBlob(b.get(name));
                     File b2 = findBlob(m.get(name));
-                    treatUntrackedFiles(m,name);
+                    treatUntrackedFiles(m, name);
                     treatConflicts(name, b1, b2);
                 }
             }
         }
         createNewCommit("Merged " + branchName + " into " + curName + ".");
-
+        getCurHead().setOtherParent(master.getHashCode(), branch.getHashCode());
+        List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
+        for (String ss : allCommits) {
+            if (!ss.equals("head") && !ss.equals("branchInfo") && !ss.equals("curBranch")) {
+                Commit c = findCommit(ss);
+                if (c.getParent().equals(branch.getHashCode()) || c.getParent().equals(master.getHashCode())) {
+                    c.setOtherParent(getCurHead().getHashCode(), null);
+                }
+            }
+        }
     }
 
 

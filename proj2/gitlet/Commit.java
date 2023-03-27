@@ -36,9 +36,7 @@ public class Commit implements Serializable {
      */
 
     //Commits should point to its previous commit.
-    private String parent1;
-
-    private String parent2;
+    private String[] parent=new String[2];
 
     //Commit should contain the snapshot of the files and their status.
     private TreeMap<String, String> files;
@@ -46,16 +44,16 @@ public class Commit implements Serializable {
     public Commit(String m, Date t, String p, TreeMap f) {
         message = m;
         timestamp = t;
-        parent1 = p;
-        parent2=null;
+        parent[0]=p;
+        parent[1]=null;
         files = f;
     }
 
     public Commit(String m, Date t, String p1, String p2, TreeMap f) {
         message = m;
         timestamp = t;
-        parent1 =p2;
-        parent2=p2;
+        parent[0] =p1;
+        parent[1]=p2;
         files = f;
     }
 
@@ -66,10 +64,7 @@ public class Commit implements Serializable {
     }
 
     public String getParent() {
-        if(parent2==null){
-            return parent1;
-        }
-        return parent2;
+        return parent[0];
     }
 
     public Commit getParentCommit() {
@@ -96,6 +91,11 @@ public class Commit implements Serializable {
 
     public TreeMap getFiles() {
         return files;
+    }
+
+    public void setOtherParent(String p1, String p2){
+        parent[1]=p1;
+        parent[2]=p2;
     }
 
     public static void changeHead(String branchname, String id) {
