@@ -36,7 +36,7 @@ public class Commit implements Serializable {
      */
 
     //Commits should point to its previous commit.
-    private String[] parent=new String[2];
+    private String[] parent = new String[2];
 
     //Commit should contain the snapshot of the files and their status.
     private TreeMap<String, String> files;
@@ -44,19 +44,18 @@ public class Commit implements Serializable {
     public Commit(String m, Date t, String p, TreeMap f) {
         message = m;
         timestamp = t;
-        parent[0]=p;
-        parent[1]=null;
+        parent[0] = p;
+        parent[1] = null;
         files = f;
     }
 
     public Commit(String m, Date t, String p1, String p2, TreeMap f) {
         message = m;
         timestamp = t;
-        parent[0] =p1;
-        parent[1]=p2;
+        parent[0] = p1;
+        parent[1] = p2;
         files = f;
     }
-
 
 
     public String getMessage() {
@@ -93,9 +92,9 @@ public class Commit implements Serializable {
         return files;
     }
 
-    public void setOtherParent(String p1, String p2){
-        parent[1]=p1;
-        parent[2]=p2;
+    public void setOtherParent(String p1, String p2) {
+        parent[1] = p1;
+        parent[2] = p2;
     }
 
     public static void changeHead(String branchname, String id) {
@@ -158,19 +157,20 @@ public class Commit implements Serializable {
         return tCommit;
     }
 
-    public static Commit findWithShortid(String id){
+    public static Commit findWithShortid(String id) {
         List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
-        for(String s:allCommits){
-            int i=0;
-           while(id.charAt(i)==s.charAt(i)){
-               i++;
-               if(i==id.length()){
-                   return findCommit(s);
-               }
-           }
+        for (String s : allCommits) {
+            int i = 0;
+            while (id.charAt(i) == s.charAt(i)) {
+                i++;
+                if (i == id.length()) {
+                    return findCommit(s);
+                }
+            }
         }
         return null;
     }
+
     public static void findbyMessage(String message) {
         List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
         ArrayList<String> targets = new ArrayList<>();

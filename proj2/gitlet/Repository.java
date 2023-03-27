@@ -111,16 +111,15 @@ public class Repository {
         Commit c = new Commit(message, presentTime, parent.getHashCode(), files);
         TreeMap<String, String> s = findStagingArea();
         TreeMap<String, String> r = findRemovedArea();
-        TreeMap<String,String> f=c.getFiles();
+        TreeMap<String, String> f = c.getFiles();
         if (!s.isEmpty()) {
             f.putAll(s);
         }
         if (r != null && !r.isEmpty()) {
-            for (String name : r.keySet()){
+            for (String name : r.keySet()) {
                 f.remove(name);
             }
-        }
-        else if(s.isEmpty()){
+        } else if (s.isEmpty()) {
             System.out.println("No changes added to the commit.");
             System.exit(0);
         }
@@ -213,20 +212,20 @@ public class Repository {
         if (files != null) {
             for (String name : files.keySet()) {
                 File f = join(CWD, name);
-                if (headFiles == null || !headFiles.containsKey(name)){
-                    if(f.exists()&&!sha1(readContentsAsString(f)).equals(files.get(name))) {
+                if (headFiles == null || !headFiles.containsKey(name)) {
+                    if (f.exists() && !sha1(readContentsAsString(f)).equals(files.get(name))) {
                         System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                         System.exit(0);
                     }
                 }
-                String content=readContentsAsString(findBlob(files.get(name)));
+                String content = readContentsAsString(findBlob(files.get(name)));
                 writeContents(f, content);
             }
         }
         if (headFiles != null) {
             for (String name : headFiles.keySet()) {
                 if (files == null || !files.containsKey(name)) {
-                    File f=join(CWD,name);
+                    File f = join(CWD, name);
                     f.delete();
                 }
             }
@@ -244,8 +243,8 @@ public class Repository {
     public static void checkoutforID(String id, String fileName) {
         Commit t = Commit.findCommit(id);
         if (t == null) {
-            t=Commit.findWithShortid(id);
-            if(t==null){
+            t = Commit.findWithShortid(id);
+            if (t == null) {
                 System.out.println("No commit with that id exists.");
                 System.exit(0);
             }
@@ -273,7 +272,7 @@ public class Repository {
         HashMap<String, String> branch = readObject(branchInfo, HashMap.class);
         String[] branches = new String[branch.size()];
         File curBranch = join(COMMIT_DIR, "curBranch");
-        String c=readContentsAsString(curBranch);
+        String c = readContentsAsString(curBranch);
         int i = 0;
         if (branchInfo.exists() && !branch.isEmpty()) {
             for (String name : branch.keySet()) {
@@ -320,41 +319,40 @@ public class Repository {
             }
         }
         System.out.println();
-        Commit cur=getCurHead();
-        TreeMap<String,String> cf=cur.getFiles();
+        Commit cur = getCurHead();
+        TreeMap<String, String> cf = cur.getFiles();
         System.out.println("=== Modifications Not Staged For Commit ===");
-        if(!stage.isEmpty()) {
+        if (!stage.isEmpty()) {
             for (String name : stage.keySet()) {
-                File f=join(CWD,name);
-                if(!f.exists()){
-                    System.out.println(name+" (deleted)");
-                }
-                else if(!sha1(readContentsAsString(f)).equals(stage.get(name))){
-                    System.out.println(name+ " (modified)");
+                File f = join(CWD, name);
+                if (!f.exists()) {
+                    System.out.println(name + " (deleted)");
+                } else if (!sha1(readContentsAsString(f)).equals(stage.get(name))) {
+                    System.out.println(name + " (modified)");
                 }
             }
         }
-        if(cf!=null&&!cf.isEmpty()){
-            for(String name: cf.keySet()){
-                File f=join(CWD,name);
-                if(!f.exists()){
+        if (cf != null && !cf.isEmpty()) {
+            for (String name : cf.keySet()) {
+                File f = join(CWD, name);
+                if (!f.exists()) {
                     continue;
                 }
-                if(!cf.get(name).equals(sha1(readContentsAsString(f)))){
-                    if(stage.isEmpty()||!stage.containsKey(name)){
-                        System.out.println(name+ " (modified)");
+                if (!cf.get(name).equals(sha1(readContentsAsString(f)))) {
+                    if (stage.isEmpty() || !stage.containsKey(name)) {
+                        System.out.println(name + " (modified)");
                     }
                 }
-                if(!f.exists()&&(removed.isEmpty()||!removed.containsKey(name))){
-                    System.out.println(name+" (deleted)");
+                if (!f.exists() && (removed.isEmpty() || !removed.containsKey(name))) {
+                    System.out.println(name + " (deleted)");
                 }
             }
         }
         System.out.println();
         System.out.println("=== Untracked Files ===");
         List<String> allFiles = Utils.plainFilenamesIn(CWD);
-        for (String s: allFiles){
-            if((stage.isEmpty()||!stage.containsKey(s))&& (cf==null||!cf.containsKey(s))){
+        for (String s : allFiles) {
+            if ((stage.isEmpty() || !stage.containsKey(s)) && (cf == null || !cf.containsKey(s))) {
                 System.out.println(s);
             }
         }
@@ -382,8 +380,8 @@ public class Repository {
     public static void reset(String id) {
         Commit c = Commit.findCommit(id);
         if (c == null) {
-            c=Commit.findWithShortid(id);
-            if(c==null){
+            c = Commit.findWithShortid(id);
+            if (c == null) {
                 System.out.println("No commit with that id exists.");
                 System.exit(0);
             }
@@ -393,9 +391,9 @@ public class Repository {
         TreeMap<String, String> headFile = cur.getFiles();
         if (t != null) {
             for (String name : t.keySet()) {
-                if (headFile == null || !headFile.containsKey(name)){
-                    File f=join(CWD,name);
-                    if(f.exists()&&!sha1(readContentsAsString(f)).equals(t.get(name))){
+                if (headFile == null || !headFile.containsKey(name)) {
+                    File f = join(CWD, name);
+                    if (f.exists() && !sha1(readContentsAsString(f)).equals(t.get(name))) {
                         System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                         System.exit(0);
                     }
@@ -418,17 +416,16 @@ public class Repository {
         clearStagingArea();
     }
 
-    public static void treatUntrackedFiles(TreeMap<String,String> m,String fileName){
-        File f=join(CWD,fileName);
-        if(!f.exists()){
+    public static void treatUntrackedFiles(TreeMap<String, String> m, String fileName) {
+        File f = join(CWD, fileName);
+        if (!f.exists()) {
             return;
         }
-        if(!sha1(readContentsAsString(f)).equals(m.get(fileName))){
+        if (!sha1(readContentsAsString(f)).equals(m.get(fileName))) {
             System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
             System.exit(0);
         }
     }
-
 
 
     public static Commit findCommonAncestor(Commit branch, Commit master) {
@@ -462,7 +459,7 @@ public class Repository {
         } else {
             contentOfBranch = readContentsAsString(b1);
         }
-        String content = "<<<<<<< HEAD" + "\n" + contentOfHead + "=======" +"\n"+ contentOfBranch + ">>>>>>>"+"\n";
+        String content = "<<<<<<< HEAD" + "\n" + contentOfHead + "=======" + "\n" + contentOfBranch + ">>>>>>>" + "\n";
         writeContents(f, content);
         String blobName = createBlob(fileName);
         addtoStagingArea(fileName, blobName);
