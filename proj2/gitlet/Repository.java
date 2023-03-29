@@ -414,14 +414,15 @@ public class Repository {
         clearStagingArea();
     }
 
-    public static void treatUntrackedFiles(TreeMap<String, String> m, String fileName) {
-        File f = join(CWD, fileName);
-        if (!f.exists()) {
-            return;
-        }
-        if (!sha1(readContentsAsString(f)).equals(m.get(fileName))) {
-            System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-            System.exit(0);
+    public static void treatUntrackedFiles(TreeMap<String, String> b, TreeMap<String, String> m) {
+        for (String name : b.keySet()) {
+            File f = join(CWD, name);
+            if (f.exists() && (m == null || !m.containsKey(name))) {
+                if (!sha1(readContentsAsString(f)).equals(b.get(name))) {
+                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                    System.exit(0);
+                }
+            }
         }
     }
 
@@ -438,7 +439,18 @@ public class Repository {
             if (parentOfBranch.contains(m.getHashCode())) {
                 return m;
             }
-            m = m.getParentCommit();
+            if (m.hasTwoParents() == false) {
+                m = m.getParentCommit();
+            } else {
+                Commit[] p = m.getTwoParents();
+                if (parentOfBranch.contains(p[0].getHashCode())) {
+                    return p[0];
+                }
+                if (parentOfBranch.contains(p[1].getHashCode())) {
+                    return p[1];
+                }
+                m = p[0].getParentCommit();
+            }
         }
         return null;
     }
@@ -495,12 +507,12 @@ public class Repository {
         TreeMap<String, String> b = branch.getFiles();
         TreeMap<String, String> m = master.getFiles();
         TreeMap<String, String> s = splitPoint.getFiles();
+        treatUntrackedFiles(b, m);
         if (s != null) {
             for (String name : s.keySet()) {
                 //modify in branch, but not in master,in master, it will stay the same as in the split point
                 if (b != null && b.containsKey(name) && !s.get(name).equals(b.get(name)) && s.get(name).equals(m.get(name))) {
                     File f = join(CWD, name);
-                    treatUntrackedFiles(m, name);
                     writeContents(f, readContents(findBlob(b.get(name))));
                     addtoStagingArea(name, b.get(name));
                 }
@@ -508,13 +520,11 @@ public class Repository {
                 if (!s.get(name).equals(b.get(name)) && (m == null || !m.containsKey(name))) {
                     if (b.get(name) != null) {
                         File b1 = findBlob(b.get(name));
-                        treatUntrackedFiles(b, name);
                         treatConflicts(name, b1, null);
                     }
                 }
                 if (!s.get(name).equals(m.get(name)) && (b == null || !b.containsKey(name))) {
                     if (m.get(name) != null) {
-                        treatUntrackedFiles(m, name);
                         File b1 = findBlob(m.get(name));
                         treatConflicts(name, null, b1);
                     }
@@ -527,39 +537,26 @@ public class Repository {
                     //also unmodified in the master.
                     //means it is removed in the branch.
                     if (s.get(name).equals(m.get(name))) {
-                        treatUntrackedFiles(m, name);
                         removeFile(name);
                     }
-                    //If it is modified in the master, it should stay at they are.
                 }
             }
         }
         if (b != null) {
             for (String name : b.keySet()) {
                 if ((s == null || !s.containsKey(name)) && (m == null || !m.containsKey(name))) {
-                    treatUntrackedFiles(b, name);
                     checkoutforID(branch.getHashCode(), name);
                     addtoStagingArea(name, b.get(name));
                 }
                 if (m != null && m.containsKey(name) && !b.get(name).equals(m.get(name))) {
                     File b1 = findBlob(b.get(name));
                     File b2 = findBlob(m.get(name));
-                    treatUntrackedFiles(m, name);
                     treatConflicts(name, b1, b2);
                 }
             }
         }
         createNewCommit("Merged " + branchName + " into " + curName + ".");
         getCurHead().setOtherParent(master.getHashCode(), branch.getHashCode());
-        List<String> allCommits = Utils.plainFilenamesIn(COMMIT_DIR);
-        for (String ss : allCommits) {
-            if (!ss.equals("head") && !ss.equals("branchInfo") && !ss.equals("curBranch")) {
-                Commit c = findCommit(ss);
-                if (c.getParent().equals(branch.getHashCode()) || c.getParent().equals(master.getHashCode())) {
-                    c.setOtherParent(getCurHead().getHashCode(), null);
-                }
-            }
-        }
     }
 
 

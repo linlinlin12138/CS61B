@@ -66,6 +66,21 @@ public class Commit implements Serializable {
         return parent[0];
     }
 
+    public boolean hasTwoParents() {
+        if (parent[1] != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public Commit[] getTwoParents() {
+        Commit[] two = new Commit[2];
+        two[0] = findCommit(parent[0]);
+        two[1] = findCommit(parent[1]);
+        return two;
+    }
+
+
     public Commit getParentCommit() {
         String parentName = getParent();
         if (parentName == null) {
