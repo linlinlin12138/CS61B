@@ -436,17 +436,20 @@ public class Repository {
         }
         Commit m = master;
         while (m != null) {
+            //System.out.println(m.getMessage());
             if (parentOfBranch.contains(m.getHashCode())) {
                 return m;
             }
-            if (m.hasTwoParents() == false) {
+            if (!m.hasTwoParents()) {
                 m = m.getParentCommit();
             } else {
+                //System.out.println(1);
                 Commit[] p = m.getTwoParents();
                 if (parentOfBranch.contains(p[0].getHashCode())) {
                     return p[0];
                 }
                 if (parentOfBranch.contains(p[1].getHashCode())) {
+                    //System.out.println(1);
                     return p[1];
                 }
                 m = p[0].getParentCommit();
@@ -495,6 +498,7 @@ public class Repository {
             System.exit(0);
         }
         Commit splitPoint = findCommonAncestor(branch, master);
+        //System.out.println(splitPoint.getMessage());
         if (splitPoint.getHashCode().equals(master.getHashCode())) {
             checkOutForBranch(branchName);
             System.out.println("Current branch fast-forwarded.");
@@ -537,6 +541,7 @@ public class Repository {
                     //also unmodified in the master.
                     //means it is removed in the branch.
                     if (s.get(name).equals(m.get(name))) {
+                        //System.out.println(1);
                         removeFile(name);
                     }
                 }
@@ -549,14 +554,20 @@ public class Repository {
                     addtoStagingArea(name, b.get(name));
                 }
                 if (m != null && m.containsKey(name) && !b.get(name).equals(m.get(name))) {
-                    File b1 = findBlob(b.get(name));
-                    File b2 = findBlob(m.get(name));
-                    treatConflicts(name, b1, b2);
+                    if (!m.get(name).equals(s.get(name)) && !b.get(name).equals(s.get(name))) {
+                        File b1 = findBlob(b.get(name));
+                        File b2 = findBlob(m.get(name));
+                        treatConflicts(name, b1, b2);
+                    }
                 }
             }
         }
         createNewCommit("Merged " + branchName + " into " + curName + ".");
-        getCurHead().setOtherParent(master.getHashCode(), branch.getHashCode());
+        Commit n=getCurHead();
+        File nc=join(COMMIT_DIR,n.getHashCode());
+        nc.delete();
+        n.setOtherParent(master.getHashCode(), branch.getHashCode());
+        n.saveCommit(curName);
     }
 
 
