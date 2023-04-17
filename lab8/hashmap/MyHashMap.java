@@ -9,7 +9,7 @@ import java.util.*;
  *  Assumes null keys will never be inserted, and does not resize down upon remove().
  *  @author YOUR NAME HERE
  */
-public class MyHashMap<K, V> implements Map61B<K, V>, Iterable<K>{
+public class MyHashMap<K, V> implements Map61B<K, V>{
     /**
      * Protected helper class to store key/value pairs
      * The protected qualifier allows subclass access
@@ -145,7 +145,7 @@ public class MyHashMap<K, V> implements Map61B<K, V>, Iterable<K>{
         }
         else{
             for(Node node:buckets[pos]){
-                if(node.key==key){
+                if(node.key.equals(key)){
                     node.value=value;
                     return;
                 }
@@ -170,12 +170,24 @@ public class MyHashMap<K, V> implements Map61B<K, V>, Iterable<K>{
 
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        if(!containsKey(key)){
+            return null;
+        }
+        int pos=Math.floorMod(key.hashCode(), initialSize);
+        Collection<Node> ll=buckets[pos];
+        for(Node node:ll){
+            if(node.key.equals(key)){
+                Node removed=node;
+                ll.remove(removed);
+                return node.value;
+            }
+        }
+        return null;
     }
 
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        return remove(key);
     }
 
     @Override
